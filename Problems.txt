@@ -1,0 +1,25 @@
+Few problems in AdvancedSearch.jsx with the genre select:
+
+After clicking a genre and loading movies/shows, when I click the next genre the currently selected data should dissapear and a fetch to be performed again;
+
+
+
+Problem on date 8/31/2025:
+When I fill selectedGenre with some numbers, and I go through the pagination. I basicly swich currentPage from 1 to 2 and 3 ...
+And after I've switched If that choice doesnt have more pages then my currentPage Im running into an error
+
+exampel:
+Fetching and displaying movies ...
+Setting the genre & building the pagination with as much pages and totalPages
+
+Action | 10
+Adventure | 35
+Comedy | 5
+
+I like to click Comedy
+Im looking for the movies of the name I've searched for, how many movies include my selectedGenre
+The chosen ones will go in an array and will be sepperated by 20 in a [], example:
+
+[
+    (5)[]
+]
