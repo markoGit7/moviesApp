@@ -4,3 +4,32 @@ body {
     background-color: black;
     color:white;
 }
+
+/* Select Stroll Bar */
+select {
+  background-color: #0f172a; /* dark background */
+  color: white;
+  border: 1px solid #334155;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+/* WebKit scrollbars (Chrome, Edge, Safari) */
+select::-webkit-scrollbar, #trendingAll_Content_Parent::-webkit-scrollbar {
+  width: 8px;
+}
+
+select::-webkit-scrollbar-track, #trendingAll_Content_Parent::-webkit-scrollbar-track {
+  background: #1e293b;
+  border-radius: 10px;
+}
+
+select::-webkit-scrollbar-thumb, #trendingAll_Content_Parent::-webkit-scrollbar-thumb {
+  background-color: #475569;
+  border-radius: 10px;
+  border: 2px solid #1e293b;
+}
+
+select::-webkit-scrollbar-thumb:hover, #trendingAll_Content_Parent::-webkit-scrollbar-thumb {
+  background-color: #64748b;
+}

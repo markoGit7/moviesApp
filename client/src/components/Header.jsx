@@ -1,4 +1,5 @@
 import React, {useEffect} from 'react'
+import { Link } from "react-router-dom";
 import {RegisterButton, LoginButton} from './Components_collection'
 function Header() {
     
@@ -13,13 +14,13 @@ function Header() {
                             {/*List for Desktop*/}
                             <ul id='onlyDesktop' className='flex flex-row -mx-5'>
                                 <li className='px-5'>Home</li>
-                                <li className='px-5'>Browse</li>
+                                <Link to={`/browse`} className='cursor-pointer' >Browse</Link>
                             </ul>
 
                             {/*List for Mobile*/}
                             <ul id='onlyMobile' className='hidden'>
                                 <li>Home</li>
-                                <li>Browse</li>
+                                <Link to={`/browse`} className='cursor-pointer' >Browse</Link>
                             </ul>
                         </div>
                     </div>

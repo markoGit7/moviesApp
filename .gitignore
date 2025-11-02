@@ -11,6 +11,8 @@ logs/
 
 # Environment variables
 .env
+client/.env
+server/.env
 
 # OS files
 .DS_Store

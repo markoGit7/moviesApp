@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import { useNavigate } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Navigation, Pagination, Autoplay } from 'swiper/modules'
@@ -88,6 +88,7 @@ function Trending() {
                             
                             spaceBetween={30}
                             slidesPerView={4}
+                            allowTouchMove={false}
                             className=""
                         >
                             {
@@ -114,7 +115,9 @@ function Trending() {
 
                             {/* Last Slide */}
                             <SwiperSlide>
-                                <h2 className='w-full h-full flex justify-center items-center'>See All</h2>
+                                <h2 className='w-full h-full flex justify-center items-center' onClick={() => navigate(`/all`, { state: { type: "movie" } })}>
+                                    See All
+                                </h2>
                             </SwiperSlide>
                         </Swiper>
 
@@ -138,14 +141,17 @@ function Trending() {
                             
                             spaceBetween={30}
                             slidesPerView={4}
+                            allowTouchMove={false}
                             className=""
                         >
                             {
                                 displayShows.map(row => (
                                     <SwiperSlide>
                                         <div>
-                                            <img src={`${IMAGE_PATH}${row.poster_path}`} className="w-full h-64 object-cover"/>
-                                            <h3>{row.name}</h3>
+                                            <span onClick={() => navigate(`/tv/${slugify(row.name)}`, { state: { id: row.id } })}>
+                                                <img src={`${IMAGE_PATH}${row.poster_path}`} className="w-full h-64 object-cover"/>
+                                                <h3>{row.name}</h3>
+                                            </span>
                                             
                                             <p className="text-gray-400 text-xs">
                                                 {row.genre_ids
@@ -162,7 +168,9 @@ function Trending() {
 
                             {/* Last Slide */}
                             <SwiperSlide>
-                                <h2 className='w-full h-full flex justify-center items-center'>See All</h2>
+                                <h2 className='w-full h-full flex justify-center items-center' onClick={() => navigate(`/all`, { state: { type: "tv" } })}>
+                                   See All
+                                </h2>
                             </SwiperSlide>
 
                         </Swiper>

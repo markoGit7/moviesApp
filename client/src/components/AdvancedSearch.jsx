@@ -1,784 +1,335 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useState, useMemo} from 'react'
+
+// Import Loaction/Navigation
+import { useParams, useLocation, useNavigate } from "react-router-dom";
+
+//import API
 import {
-    searchAll, 
-    searchMovies, 
-    searchShows, 
-    popularMovies_and_Shows, 
-    popularMovies_or_Shows,
-    Genres,
-    popularMovies_and_Shows_Category,
-    popularMovies_Category,
-    popularShows_Category
-} from '../api/movies'
+   searchContent,
+   Genres,
+   discoverContent,
+   Languages
+} from '../api/movies';
 
-const IMAGE_PATH = 'https://image.tmdb.org/t/p/w500';
+//Import Components
+import {ContentDisplay, SceletonLoading} from './Components_collection.js';
 
-let prevTitle = '';
+
+//Font Awesome Icons
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowUpAZ, faMagnifyingGlass  } from "@fortawesome/free-solid-svg-icons";
+
+
+//function for fetching genres
+async function Fetch_Genres() {
+
+    const { movieGenres, showsGenres } = await Genres();
+
+    const merge = [...movieGenres, ...showsGenres];
+    
+    const removeDuplicates = {};
+    
+    merge.forEach(elm => {
+        removeDuplicates[elm.id] = elm.name;
+    });
+
+    const final = [];
+
+    for(const g in removeDuplicates) {
+        
+        const inMovie = Boolean(movieGenres.find(col => col.id === Number(g)));
+
+        const inTv = Boolean(showsGenres.find(col => col.id === Number(g)));
+
+        final.push({id:g, name:removeDuplicates[g], movie:inMovie, tv:inTv});
+    }
+    
+    return final;
+};
+
+
+async function Fetch_Languages() {
+    const result = await Languages();
+    console.log(result);
+}
+
+
 
 function AdvancedSearch() {
 
-    const [title, setTitle] = useState('');
-    const [movies, setMovies] = useState([]);
-    const [shows, setShows] = useState([]);
-    const [type, setType] = useState('all');
-    const [genre, setGenre] = useState([]);
-    const [selectedGenre, setSelectedGenre] = useState([]);
-    const [TotalPages, setTotalPages] = useState(0);
-    const [pagination, setPagination] = useState(null);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [currentSelectedYear, setCurrentSelectedYear] = useState(null);
-    const [allYears, SetAllYear] = useState([]);
-    const [myCustomPages, setCustomPages] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [collectAll, setCollectAll] = useState([]);
-    const [genreLoaded, setGenreLoaded] = useState(false);
-    const [noContentFound, setNoContentFound] = useState(false);
+    
+    //getting type and query from browse
+    const location = useLocation();
+    const q = location?.state?.query || "";
+    const t = q === "" && location?.state?.type === "multi" || !location?.state?.type ? "movie" : location?.state?.type;
 
     
-    //setting the years select 2025 - 1900
-    const handle_Year_Change = (e) => {
-        setCurrentSelectedYear(Number(e.target.value));
-    };
+    //variables
+    const [title, setTitle] = useState(q);
+    const [type, setType] = useState(t);
+    const [year, setYear] = useState(null);
+    const [selectedGenre, set_selectedGenre] = useState(null);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(null);
+    const [genres, setGenres] = useState(null);
+    const [genersLoading, setGenersLoading] = useState(true);
+    const [languages, setLanguages] = useState(null);
+    const [selectedLanguage, setSelectedLanguage] = useState("en");
 
-    const set_Amount_For_Years = (arr) => {
-        const updatedYear = allYears.map(yr => ({...yr, amount: 0}));
-        
-        updatedYear.forEach(yr => {
-            
+    //variables for skeletonLoading
+    const [isLoading, setLoading] = useState(false);
+    const [skeletonsAmount, setSkeletonAmounts] = useState(null);
 
-            arr.forEach(r_d => {
-                if(Number(r_d.release_date.split('-')[0]) === yr.y) yr.amount++; 
-            });
+    //array varibale
+    const [item, setItem] = useState([]);
+    
 
-        });
 
-        SetAllYear(updatedYear);
+    const handleInputSubmit = (str) => {//Setting up title name, and other on blur and Enter functionalitis
+
+        if(str === "" && type === "multi") {
+            setType("movie");
+        }
+
+        setTitle(str);
 
     }
 
-    const handle_Type_Change = (e) => {
-        setType(e.target.value);
-    };
 
-    const handleSelectedGenre = (genreID) => {
+    const fetching = async() => {
         
-        const skipEmptyAmount = genre.find(g => g.id === genreID).amount
-        
-        if(skipEmptyAmount === 0) return;
-        
-        setSelectedGenre(prev => {
+        let final = [];
 
-            //on the clicked categrie set genre.amount to 0
+        //set loading to true
+        setLoading(true);
+
+        if(title === "") {// fetching from discovery 
             
-            if (!prev.includes(genreID)) return [...prev, genreID];
+            //fetch
+            const result = await discoverContent(type, year, selectedGenre, page, selectedLanguage);
+
+            //set skeleton amounts
+            setSkeletonAmounts(result.results.length);
+
+            //filtering
+            final = result.results.sort((a, b) => b.popularity - a.popularity).filter(col => col.poster_path !== null && col.poster_path !== undefined);
+
+            //seting totalPages
+            setTotalPages(result.total_pages);
 
 
-            return prev;
-        });
+        } else { // fetching from search
+            const result = await searchContent(title, type, page);
+
+            //set skeleton amounts
+            setSkeletonAmounts(result.results.length);
+
+            //filtering
+            final = result.results.sort((a, b) => b.popularity - a.popularity).filter(col => col.poster_path !== null && col.poster_path !== undefined);
+            
+            //seting totalPages
+            setTotalPages(result.total_pages);   
+
+            //reset year and selected genre to default
+            setYear(null);
+            set_selectedGenre(null);
+        }
+
+        //remove loading
+        setLoading(false);
+
+        console.log('Array: ', final);
+        
+        //getting array of content
+        setItem(final);
+      
     };
 
-    function recreatePages(fetchAll) {
-        let onePage = [];
-        const mainArr =[];
+    const generateYears = () => {//function that generates Years
+        let date = new Date;
 
-        fetchAll.length <= 20 ? 
-        mainArr.push([...fetchAll]) 
-        : 
-        fetchAll.forEach((p, indx) => {
-            onePage.push(p);
+        //initialise earliest to latest year
+        let latestYear = date.getFullYear();
+        let oldestYear = latestYear - 100;
+        
+        //fill the gaps from earliest to latest
+        const yearsCollect = [];
+        for(let i = oldestYear; i <= latestYear; i++) {
+            yearsCollect.push(i);
+        }
 
-            if(onePage.length === 20) {
-                mainArr.push([...onePage]);
-                onePage = [];
-            }
+        //show from latest to earliest
+        yearsCollect.sort((a, b) => b - a);
 
-            if(fetchAll.length - 1 === indx && onePage.length < 20) {
-                mainArr.push([...onePage]);
-            }
-        });
-
-        return mainArr;
+        return yearsCollect;
     }
 
 
-    function Pages_Generator() {//creating pagination
+    const handleTypeChange = (val) => {//function that handles the change of the type(all, movies, shows)
+        
+        //change the type to the selected value
+        setType(val);
+        
+        //reset the selected genre and selected year to null
+        set_selectedGenre(null);
+        setYear(null);
+    }
+
+
+    useEffect(() => {//Loading Genres
+        const loadGenres_and_loadLanguages = async () => {
+            const dataG = await Fetch_Genres();
+            setGenres(dataG || []);
+
+            const dataL = await Languages();
+            setLanguages(dataL || []);
+
+            setGenersLoading(false);
+        };
+
+        loadGenres_and_loadLanguages();
+        
+    }, []);
+    
+
+
+    useEffect(() => {//dedecting input changes 
+
+        if(genersLoading) return;
+
+        if (page !== 1) {
+            setPage(1);
+        } else {
+            fetching();
+        }
+
+
+    }, [title, type, year, selectedGenre, genersLoading, selectedLanguage]);
+
+
+    const pagination = useMemo(() => {//Controling and adjusting the pagination
+
         let start = 1;
+        let end = totalPages > 10 ? 10 : totalPages;
 
-        if(currentPage > 6) {
-            start = currentPage - 5;
-        }
-        
-        let end = currentPage > 6 ? currentPage + 4 : 10;
-
-        if(TotalPages < 10) {
-            end = TotalPages;
+        //when page is 7
+        if(page >= 7) {
+            start = page - 5;
+            end = page + 4 < totalPages ? page + 4 : totalPages;
         }
 
-        if(currentPage + 4 >= TotalPages) {
-            start = ((TotalPages - 4) - 5) <= 0 ? 1 : (TotalPages - 4) - 5;
-            end = TotalPages;
-        }
-
-        const PageArr = [];
-
-        while(start <= end) {
-            PageArr.push(start);
-            start++;
-        }
-
-        setPagination(PageArr);
-    }
-
-
-    async function getGenre() {
-
-        const { movieGenres, showsGenres } = await Genres();
-
-        const merge = [...movieGenres, ...showsGenres];
-        
-        const removeDuplicates = {};
-        
-        merge.forEach(elm => {
-            removeDuplicates[elm.id] = elm.name;
-        });
-
+        //generatin pages
         const final = [];
-        
-        for(const g in removeDuplicates) {
-            final.push({'name':removeDuplicates[g], 'id':Number(g), 'amount': 0});
+        for(let i = start; i <= end; i++) {
+            final.push(i);
         }
         
         return final;
-    }
 
-    function Type_Variations() {//function to find out the type of content
-        this.Search_Option = function () {
-            switch (type) {
-                case 'movie': onlyMovies();
-                    break;
-                case 'tv': onlyShows();
-                    break;
-                default: searchMovies_and_Shows();
-                    break;
-            }
-        };
+    }, [page, totalPages]);
 
-        this.Auto_Option = function () {
-            switch (type) {
-                case 'movie': moviesORshows();
-                    break;
-                case 'tv': moviesORshows();
-                    break;
+    useEffect(() => {// fetching on page change
+        console.log(`Current page is: `, page);
+        if(genersLoading) return;
 
-                default: moviesANDshows();
-                    break;
-            }
-        };
-    }
-
-
-    function splitContent(page) {//function that splits movies apart from shows on multi search
-        const movie = [], show = [];
-       
-        page.forEach(cell => {
-            
-            if(cell.media_type === 'movie') {
-                movie.push(cell);
-            } else if(cell.media_type === 'tv') {
-                show.push(cell);
-            }
-
-        })
-
-        return [movie, show];
-    }
-
-    async function autoCategories() {//function that fetches movies and shows based on a category
-        let updateGenreAmount = [];
-        switch (type) {
-            case 'movie':
-
-                updateGenreAmount = await Promise.all(
-                    genre.map(async g => {
-                        try {
-                        const results = await popularMovies_Category(g.id, 1);
-                        const totalResults = results.total_results;
-                        
-                        return { ...g, amount: totalResults };
-                        } catch (err) {
-                        console.error(`Error fetching category for genre ${g.id}`, err);
-                        return { ...g, amount: 0 };
-                        }
-                    })
-                );
-
-                break;
-            case 'tv':  
-
-                updateGenreAmount = await Promise.all(
-                    genre.map(async g => {
-                        try {
-                        const results = await popularShows_Category(g.id, 1);
-                        const totalResults = results.total_results;
-                        
-                        return { ...g, amount: totalResults };
-                        } catch (err) {
-                        console.error(`Error fetching category for genre ${g.id}`, err);
-                        return { ...g, amount: 0 };
-                        }
-                    })
-                );
-
-                break;
-            default:
-                updateGenreAmount = await Promise.all(
-                    genre.map(async g => {
-                        try {
-                        const { movieCategory, showsCategory } = await popularMovies_and_Shows_Category(g.id, 1);
-                        const sum = (movieCategory.total_results || 0) + (showsCategory.total_results || 0);
-                        return { ...g, amount: sum };
-                        } catch (err) {
-                        console.error(`Error fetching category for genre ${g.id}`, err);
-                        return { ...g, amount: 0 };
-                        }
-                    })
-                );
+        fetching();
         
-                break;
-        }
-
-        setGenre(updateGenreAmount);
-        
-    }
-
-    async function onSearchCategories() {
-        let updateGenreAmount = [];
-        switch (type) {
-            case 'movie':
-                break;
-            case 'tv':
-                break;
-            default:
-                updateGenreAmount = await Promise.all(
-                    genre.map(async g => {
-                        let moviesTotalResults = 0, showsTotalResults = 0, totalResults = 0, totalCells = 0; 
-                        for(let i = 1; i <= 3; i++) {
-                            const result = await searchAll(title, i);
-                            const [captureMovies, captureShows] = splitContent(result.results);
-
-                            const Movies_Category_Filter = captureMovies.filter(cell => {
-                                const genreIDSEmpty = cell.genre_ids === null || cell.genre_ids.length === 0;
-
-                                return !genreIDSEmpty && cell.genre_ids.includes(g.id);
-                            });
-
-                            const Shows_Category_Filter = captureShows.filter(cell => {
-                                const genreIDSEmpty = cell.genre_ids === null || cell.genre_ids.length === 0;
-
-                                return !genreIDSEmpty && cell.genre_ids.includes(g.id);
-                            });
-
-
-                            totalResults = result.total_results;
-                            totalCells += result.results.length;
-
-                            moviesTotalResults += Movies_Category_Filter.length || 0;
-                            showsTotalResults += Shows_Category_Filter.length || 0;
-                            //filter for movies and shows of g.id
-                            //colecting length of the filter
-                        }
-                        const category = moviesTotalResults + showsTotalResults;
-                        const sum = Math.floor((category / totalCells) * totalResults);
-
-                        console.log(`${g.name}: `, sum);
-                        return {...g, amount: sum}
-                    })
-                );
-                break;
-        }
-
-        // console.log(updateGenreAmount);
-        setGenre(updateGenreAmount);
-    }
-
-    async function selectedCategories(arr) {//function that fetches movies and shows based on selected category
-
-        const arrToTxt = arr.join(",");
-
-        let result = null;
-        let noContent = null;
-        let Existing_Null_Element = false;
-        switch (type) {
-            case 'movie':
-                result = await popularMovies_Category(arrToTxt, 1);
-                setMovies(result.results);
-
-                Existing_Null_Element = result.results.length === 1 && result.results[0].poster_path === null ? true : false;
-                noContent = result.results.length < 1 || Existing_Null_Element;
-
-                //update Total Pages
-                setTotalPages(result.total_pages > 0 && !noContent ? result.total_pages : 0);
-
-                //update if there no content
-                if(noContent) {
-                    setNoContentFound(true);
-                } else {
-                    setNoContentFound(false);
-                }
-
-                setLoading(false);
-
-                break;
-            case 'tv':  
-                result = await popularShows_Category(arrToTxt, 1);
-                setShows(result.results);
-
-                noContent = result.results.length < 1;
-                
-                //update Total Pages
-                setTotalPages(result.results.length > 0 ? result.total_pages : 0);
-
-                //update if there no content
-                if(noContent) {
-                    setNoContentFound(true);
-                } else {
-                    setNoContentFound(false);
-                }
-
-                setLoading(false);
-                break;
-            default:
-                
-                let {movieCategory, showsCategory} = await popularMovies_and_Shows_Category(arrToTxt, 1)
-                const higherTotalPages = movieCategory.total_pages > showsCategory.total_pages ? movieCategory.total_pages : showsCategory.total_pages;
-                
-                //Checking if the last element in movies is not empty
-                if(movieCategory.results.length === 1) {
-                    movieCategory.results[0].poster_path === null ? movieCategory = [] : null; 
-                }
-                //Checking if the last element in shows is not empty
-                if(showsCategory.results.length === 1) {
-                    showsCategory.results[0].poster_path === null ? showsCategory = [] : null;
-                }
-
-                //When movies and shows are empty, there's nothing to be shown
-                noContent = movieCategory.results.length < 1 && showsCategory.results.length < 1;
-
-                setMovies(movieCategory.results);
-                setShows(showsCategory.results);
-
-                
-                //update Total Pages
-                setTotalPages(noContent ? 0 : higherTotalPages);
-
-                //update if there no content
-                if(noContent) {
-                    setNoContentFound(true);
-                } else {
-                    setNoContentFound(false);
-                }
-
-                setLoading(false);
-
-                break;
-        }
-
-        
-    }
-
-    async function selectedGenrePageChange(page) {
-        const arrToTxt = selectedGenre.join(",");
-        let result = null;
-        switch (type) {
-            case 'movie': 
-                result = await popularMovies_Category(arrToTxt, page);
-                setMovies(result.results);
-
-                setLoading(false);
-                break;
-            case 'tv': 
-                result = await popularShows_Category(arrToTxt, page);
-                setShows(result.results);
-
-                setLoading(false);
-                break;
-            default:
-                const {movieCategory, showsCategory} = await popularMovies_and_Shows_Category(arrToTxt, page);
-                setMovies(movieCategory.results);
-                setShows(showsCategory.results);
-
-                setLoading(false);
-                break;
-        }
-    }
-
-    //Storage for movies and shows functions
-    async function moviesORshows() {
-
-        const result = await popularMovies_or_Shows(type, 1);
-        
-        autoCategories();
-
-        if(type === 'movie') {
-            setMovies(result.results);
-        } else {
-            setShows(result.results); 
-        }
-
-        //loaded
-        setLoading(false);
-
-        //updates
-        const pagesOverLimit = result.total_pages > 500 ? 500 : result.total_pages;
-        setTotalPages(pagesOverLimit);
-        
-    }
-
-    async function moviesANDshows() {
-        const result = await popularMovies_and_Shows(1);
-        
-        
-        autoCategories();
-
-        //split the movies and shows
-        const [captureMovies, captureShows] = splitContent(result.results);
-
-        setMovies(captureMovies);
-        setShows(captureShows);
-
-        //loaded
-        setLoading(false);
-
-        //updates
-        const pagesOverLimit = result.total_pages > 500 ? 500 : result.total_pages;
-        setTotalPages(pagesOverLimit);
-    }
-
-    async function onlyMovies() {
-        const result = await searchMovies(title, 1);
-
-        setCollectAll(await fetchingAll(result.total_pages, 'searchMovies'));
-
-        setMovies(result.results);
-
-        //loaded
-        setLoading(false);
-
-        //updates
-        const pagesOverLimit = result.total_pages > 500 ? 500 : result.total_pages;
-        setTotalPages(pagesOverLimit);
-        
-    }
-
-    async function onlyShows() {
-        const result = await searchShows(title, 1);
-
-        setCollectAll(await fetchingAll(result.total_pages, 'searchMovies'));
-
-        setShows(result.results);
-
-        //loaded
-        setLoading(false);
-
-        //updates
-        const pagesOverLimit = result.total_pages > 500 ? 500 : result.total_pages;
-        setTotalPages(pagesOverLimit);
-        
-    }
-
-    async function searchMovies_and_Shows() {
-        const result = await searchAll(title, 1);
-
-        //update Genres
-        onSearchCategories();
-
-        //split the movies and shows
-        const [captureMovies, captureShows] = splitContent(result.results);
-
-        setMovies(captureMovies);
-        setShows(captureShows);
-
-        //loaded
-        setLoading(false);
-
-        //updates
-        const pagesOverLimit = result.total_pages > 500 ? 500 : result.total_pages;
-        setTotalPages(pagesOverLimit);
-        
-    }
-
-    //Reseting parameters
-    function Reset() {
-        setMovies([]);
-        setShows([]);
-
-        setCurrentPage(1);
-        setTotalPages(0);
-        setSelectedGenre([]);
-        setNoContentFound(false);
-        //Setting genre amount to 0
-        if(genre.length > 0) {
-            const resetAmount = genre.map(g => ({ ...g, amount: 0 }))
-            setGenre(resetAmount);
-        }
-    }
-
-
-    useEffect(() => {
-
-        const currentYear = new Date().getFullYear();
-
-        const years = Array.from(
-            { length: currentYear - 1900 },
-            (_, i) => ({ y: currentYear - i, amount: 0 })
-        );
-
-        SetAllYear(years);
-    }, []);
-
-
-
-    //Loading the genre options
-    useEffect(() => {
-        async function loadGenre() {
-            setGenre(await getGenre());
-            setGenreLoaded(true);
-        }
-        loadGenre();
-    }, []);
-      
-        
-    useEffect(() => {
-        if(!genreLoaded) return;
-
-        Reset();
-        setLoading(true);
-
-        if(title.trim() === '') {
-            new Type_Variations().Auto_Option();
-            return;
-        }
-
-        new Type_Variations().Search_Option();
-    }, [title, genreLoaded]);
+    }, [page, genersLoading]);
     
     
-    useEffect(() => { // pagination UseEffect
-        if(TotalPages <= 0) return;
-
-        Pages_Generator();
-    }, [TotalPages, currentPage]);
-
-
-    useEffect(() => {
-        
-        if(!genreLoaded) return;
-
-        Reset();
-        setLoading(true);
-
-
-        if(title.trim() === '') {
-            new Type_Variations().Auto_Option();
-            return;
-        }
-        
-        new Type_Variations().Search_Option();
-        
-    }, [type, genreLoaded]);
-
-
-    useEffect(() => {
-        
-        if(!genreLoaded) return;
-
-        if(TotalPages < 1) {
-            return;
-        }
-
-    
-
-        setLoading(true);
-
-        const fatching = async() => {
-            let res = null;
-
-            if(title.trim() === '') {
-
-                switch (type) {
-                    case 'movie': res = await popularMovies_or_Shows(type, currentPage);  
-                        break;
-                    case 'tv': res = await popularMovies_or_Shows(type, currentPage);
-                        break;
-                    default: res = await popularMovies_and_Shows(currentPage);
-                        break;
-                }   
-
-            } else {
-
-                switch (type) {
-                    case 'movie': res = await searchMovies(title, currentPage);  
-                        break;
-                    case 'tv': res = await searchShows(title, currentPage);
-                        break;
-                    default: res = await searchAll(title, currentPage);
-                        break;
-                }
-
-            }
-
-            return res;
-        
-        };
-
-        const uploadRes = async() => {
-            const result = await fatching();
-
-
-            switch (type) {
-                case 'movie': setMovies(result.results);
-                    break;
-                case 'tv': setShows(result.results);
-                    break;
-                default:
-                    //split the movies and shows
-                    const [captureMovies, captureShows] = splitContent(result.results);
-
-                    setMovies(captureMovies);
-                    setShows(captureShows);
-
-                    break;
-            }
-
-            setLoading(false);
-        }
-
-
-        if(selectedGenre.length > 0) {
-           selectedGenrePageChange(currentPage);
-           return;
-        }
-
-        uploadRes();
-        
-    }, [currentPage, genreLoaded]);
-
-    useEffect(() => {
-        if(selectedGenre.length <= 0 && collectAll.length <= 0) return;
-
-        //start Loading
-        setLoading(true);
-
-        selectedCategories(selectedGenre);
-        
-        //Everythime a new categorie has being selected, go to page 1
-        setCurrentPage(1);
-        
-    }, [selectedGenre]);
-    
-
-
-
-
-    
-    
-    
-
 
     return (
         <>
-            <div>Total Pages: {TotalPages}</div>
-            <div>Current page: {currentPage}</div>
-            <section style={{display:'flex'}}>
-                {
-                    !loading && !noContentFound ?
+            <section className='w-full  pt-5 pb-15 relative'>
+                <div className='w-[1200px] max-w-full px-5 mx-auto '>
+                    {/* Controls */}
+                    <div >
+                        
+                        <div className='flex mb-5 justify-between items-center'>
+                            {/* Input */}
+                            <div className='inline-block relative w-[650px] max-w-full'>
+                                <input type='text' defaultValue={title} onKeyDown={(e) => e.key === 'Enter' ? handleInputSubmit(e.target.value) : null}  onBlur={(e) => handleInputSubmit(e.target.value)} placeholder='Search by title...' className='border-gray-500 w-full focus:border-gray-200 p-[12px_12px_12px_38px] border-1 rounded-lg outline-none text-lg'/>
+                                <FontAwesomeIcon icon={faMagnifyingGlass} className="text-lg  absolute left-3 top-1/2 -translate-y-1/2"/>
+                            </div>
+
+                            {/* Pages Count */}
+                            <div className='text-lg text-gray-300 inline-block'>
+                                Total Pages: {totalPages} | Page: {page}
+                            </div>
+                        </div>
+                        
+                        {/* Filter Controls */}
+                        <div class="flex space-x-4 mb-6">
+
+                            <select id="type-filter" value={type} onChange={(e) => handleTypeChange(e.target.value)}  className="w-auto  border-gray-700 text-gray-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2.5 appearance-none">
+                                <option value="multi" disabled={title === "" ? true : false}>Type: All</option>
+                                <option value="movie">Movies</option>
+                                <option value="tv">TV Shows</option>
+                            </select>
+
+                            <select id="genre-filter" value={selectedGenre || "all"} disabled={title ? true : false} onChange={(e) => set_selectedGenre(Number(e.target.value) || null)}  className={`w-48  border border-gray-700 ${title === "" ? '!text-white' : '!text-gray-500 !bg-gray-800'} text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2.5 appearance-none`}>
+                                <option value="all">Genres</option>
+                                {
+                                    genres && genres.map(col => (
+                                        <option value={col.id} disabled={!col[type]}>{col.name}</option>
+                                    ))
+                                }
+                            </select>
+                            
+                            <select id="year-filter" value={year || "all"} disabled={title ? true : false} onChange={(e) => setYear(Number(e.target.value) || null)} className={`w-auto  border border-gray-700 ${title === "" ? '!text-white' : '!text-gray-500 !bg-gray-800'} text-gray-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2.5 appearance-none`}>
+                                <option value="all">Year: All</option>
+                                {
+                                    generateYears().map(cell => (
+                                        <option value={cell} >{cell}</option>
+                                    ))
+                                }
+                            </select>
+
+                            <select id="year-filter" value={selectedLanguage || "en"} disabled={title ? true : false} onChange={(e) => setYear(Number(e.target.value) || null)} className={`w-auto  border border-gray-700 ${title === "" ? '!text-white' : '!text-gray-500 !bg-gray-800'} text-gray-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2.5 appearance-none`}>
+                                {
+                                    languages && languages.map(cell => (
+                                        <option value={cell.iso_639_1} >{cell.english_name}</option>
+                                    ))
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    
+                    {/* Content */}
+                    {
+                        isLoading  ?
+
+                        (<SceletonLoading contnetAmount={skeletonsAmount} loading={isLoading}/>)
+                        :
+                        (<ContentDisplay array={item} type={type}/>)
+                    
+                    }
                 
-                    (<div style={{display:'flex', flexDirection:'column', rowGap:'70px', order:'2'}}>
-                        {/* Movies */}
-                        <div style={{display: movies.length > 0 ? 'flex' : 'none', flexWrap:'wrap', margin:'0 -10px', rowGap:'10px', justifyContent:'center'}}>
-                            {
-                                movies.map(movie => (
-                                    <div style={{width:'25%', display:`${movie.poster_path ? 'block' : 'none'}`, padding:'0 10px', position:'relative'}}>
-                                        <span style={{position:'absolute', background:'orange', color:'white', top:'5px', left:'10px'}}>{movie.release_date}</span>
-                                        <img src={`${IMAGE_PATH}${movie.poster_path}`} style={{width:'100%', height:'400px', objectFit:'cover', objectPosition:'center center'}}/>
-                                    </div>
-                                ))
-                            }
-                        </div>
-                        <div style={{display:'block', width:'100%', height:'3px', background:'black'}}></div>
-                        {/* Shows */}
-                        <div style={{display:`${shows.length > 0 ? 'flex' : 'none'}`, flexWrap:'wrap', margin:'0 -10px', rowGap:'10px', justifyContent:'center'}}>
-                            {   
-                                shows.map(show => (
-                                    <div style={{width:'25%', display:`${show.poster_path ? 'block' : 'none'}`, padding:'0 10px'}}>
-                                        <img src={`${IMAGE_PATH}${show.poster_path}`} style={{width:'100%', height:'400px', objectFit:'cover', objectPosition:'center center'}}/>
-                                    </div>
-                                ))
-                            }
-                        </div>
-                    </div>)
-
-                    :
-                    (<div style={{display:'flex', flexDirection:'column', rowGap:'70px', order:'2', fontSize:'24px', justifyContent:'center', alignItems:'center', width:'100%', height:'100dvh'}}>
-                        {
-                            loading ? (<span>Loading...</span>) : (<span>No Results Found</span>)
-                        }
-                    </div>)
-                }
-
-                <aside style={{order:'1', padding:'0 10px 0 0'}}>
-                    <div id='selected'>
-                        <span style={{display:`${title !== ''?'inline-block' : 'none'}`,background:'green', marginRight:'10px'}}>{title}</span>
-                        <span style={{display:`${type !== ''?'inline-block' : 'none'}`, background:'green', marginRight:'10px'}}>{type}</span>
-                        <div style={{display:`${selectedGenre.length > 0?'inline-block' : 'none'}`, marginRight:'10px'}}>
-                            {
-                              selectedGenre.map(g => (
-                                <span style={{marginRight:'5px', background:'green'}}>{genre.find(n => n.id === g).name}</span>
-                              ))  
-                            }
-                        </div>
-                    </div>
-
-                    <lable>Title:</lable>
-                    <input type='text' onBlur={(e) => setTitle(e.target.value)} />
-                    
-                    <lable>Type:</lable>
-                    <select name="" id="type" onChange={handle_Type_Change}>
-                        <option value="all">All</option>
-                        <option value="movie">Movies</option>
-                        <option value="tv">Shows</option>
-                    </select>
-                    
-                    <div id='genre'>
-                        {
-                            genre.map(g => (
-                                <div onClick={() => handleSelectedGenre(g.id)}>{g.name}      | {g.amount}</div>
-                            ))
-                        }
-                    </div>
-
-                    <lable>Year:</lable>
-                    <select name="" id="year" onChange={handle_Year_Change}>
-                        <option value="all">All Years</option>
-                            {
-                                allYears.map(row => (
-                                    <option value={row.y}>{row.y} ({row.amount})</option>
-                                ))
-                            }
-                    </select>
-                </aside>
+                </div>
+                
             </section>
+            
+            {/* Pagination  */}
+            <div className='p-[30px_0px_15px] text-center fixed bottom-0 left-0 w-full'>
+                <div className='bg-gray-800 inline-block p-[5px_10px_5px_10px] rounded-full  drop-shadow-sm drop-shadow-black/70 '>
+                    <div className='flex -mx-[5px] gap-x-[5px]'> 
+                        <div className={`${page === 1 ? 'bg-gray-400 pointer-events-none cursor-default text-white/70' : 'bg-gray-500 pointer-events-auto cursor-pointer text-white'} px-[5px] rounded-l-full inline-flex justify-center items-center rounded-tr-lg rounded-br-lg`} onClick={() => setPage(prev => prev - 1 || 1)}>
+                            <span className="inline-block mr-1">&lt;</span> Prev
+                        </div>
 
-            <div> 
-                {
-                    pagination && TotalPages > 0 ? 
-                    
-                    pagination.map(numb => (
-                        <span style={{padding:'0 5px', fontSize:'16px', cursor:'pointer', color:`${currentPage === numb ? 'blue' : 'black'}`}} onClick={() => setCurrentPage(numb)}>{numb}</span>
-                    ))
-                    :
-                    null
-                }
+                        {
+                        totalPages  && 
+
+                            pagination.map(numb => (
+                                <span className={`rounded-lg min-w-9 min-h-9 p-1 cursor-pointer text-base inline-flex justify-center items-center ${page === numb ? 'bg-red-500' : 'bg-gray-500'}`} onClick={() => setPage(numb)}>{numb}</span>
+                            ))
+
+                        }
+                        <div className={`${page === totalPages ? 'bg-gray-400 pointer-events-none cursor-default text-white/70' : 'bg-gray-500 pointer-events-auto cursor-pointer text-white' } px-[5px] rounded-r-full inline-flex justify-center items-center rounded-l-lg`} onClick={() => setPage(prev => prev + 1 < totalPages ? prev + 1 : totalPages)}>
+                            Next <span className="inline-block ml-1">&gt;</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </>
     )

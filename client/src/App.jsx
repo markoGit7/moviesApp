@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Routes, Route } from "react-router-dom";
-import {SearchResults, SearchBar, AdvancedSearch} from './components/Components_collection.js'
-import {Home, MovieDetails} from './pages/Pages_collection.js'
+import {AdvancedSearch} from './components/Components_collection.js'
+import {Home, MovieDetails, ShowsDetails, TrendingAll, Browse, AiSearch} from './pages/Pages_collection.js'
 function App() {
     
 
@@ -10,6 +10,11 @@ function App() {
         <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/movie/:slug" element={<MovieDetails />} />
+            <Route path="/tv/:slug" element={<ShowsDetails />} />
+            <Route path="/all/" element={<TrendingAll />} />
+            <Route path="/browse" element={<Browse />} />
+            <Route path="/browse/search" element={<AdvancedSearch />} />
+            <Route path="/ai-search" element={<AiSearch />} />
         </Routes>
   
     )

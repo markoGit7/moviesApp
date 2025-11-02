@@ -1,13 +1,13 @@
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 
-import {movieByID} from '../api/movies.js'
+import {showByID, episodesBySeason} from '../api/movies.js'
 //Font Awesome Icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar, faPlay, faImages, faX, faChevronCircleLeft, faChevronCircleRight, faHeart, faShare, faCommentDots, faUserTie, faThumbsUp, faThumbsDown, faReply, faAngleDown  } from "@fortawesome/free-solid-svg-icons";
 
 //components
-import {Header, RecomendedMovies} from '../components/Components_collection.js'
+import {Header, RecomendedShows, Episodes} from '../components/Components_collection.js'
 
 //slider
 import { Swiper, SwiperSlide } from 'swiper/react'
@@ -19,15 +19,19 @@ import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 
 const IMAGE_PATH = 'https://image.tmdb.org/t/p/w500';
-function MovieDetails() {
+function ShowsDetails() {
     const { slug } = useParams();
     const location = useLocation();
     const navigate = useNavigate();
-    const [movie, setMovie] = useState(null);
+    const [show, setShow] = useState(null);
+    const [episodes, setEpisodes] = useState(null);
+    const [selected_season, setSelectedSeason] = useState(null);
+    const [selected_episode, setSelectedEpisode] = useState(null);
+    const [allActors, setAllActors] = useState(null);
     const swiperRef = useRef(null);
-    const [RETURN, setRETURN] = useState(false);
 
-    const movieId = location.state?.id;
+    const showId = location.state?.id;
+
     const [trailerKey, setTrailerKey] = useState(null);
 
     const [zoomedPhotos, setZoomedPhotos] = useState(null);
@@ -37,13 +41,15 @@ function MovieDetails() {
     //user
     const [hasUser, setUser] = useState(false);
 
-    const formatDate = (dateStr) => {//making the date to be ex:01-Jan-2025
-        const date = new Date(dateStr);
-        return date.toLocaleDateString("en-GB", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-        });
+    const Released_Ended = (start, end) => {//function for returning release-end date of a tv show
+        const release = start?.split('-')[0];
+        const ended = end?.split('-')[0];
+
+        if(!release) return '/';
+
+        let str = release !== ended && ended ? `${release}–${ended}` : release;
+        
+        return str;
     };
 
     const handleZoomedContent = (type) => {//collecting photos/videos from selected type
@@ -51,18 +57,18 @@ function MovieDetails() {
 
         if(type === 'photos') {
             
-            result = movie.images.posters.length > 0 ? movie.images.posters : null;
+            result = show.images.posters.length > 0 ? show.images.posters : null;
             setZoomedPhotos(result);
             
         } else {
             
-            result = movie.videos.results.length > 0 ? movie.videos.results : null;
+            result = show.videos.results.length > 0 ? show.videos.results : null;
             setZoomedVideos(result);
             
         }
 
         if(result) document.body.classList.add("overflow-hidden");
-    }
+    };
 
     const handleCloseZoomed = () => { //reseting zoomed content to default
         //Reset everything to deafult
@@ -71,67 +77,118 @@ function MovieDetails() {
         setCurrentIndex(0);
 
         document.body.classList.remove("overflow-hidden");
+    };
+
+    const handleSelectedEpisode = (ep) => {
+
+        console.log('Episode Number: ',ep)
+
+        if(ep === "") {//When I select none show all the episodes
+            setSelectedEpisode(null);
+            return;
+        }
+
+        setSelectedEpisode(ep);
+    };
+
+    function reset() {
+        setShow(null);
+        setEpisodes(null);
+        setTrailerKey(null);
+        setAllActors(null);
     }
 
-    const movieDirector = () => {//Function for finding the movie director
-        if(!movie?.credits?.crew) return 'Unknown Director';
-        const Director = movie.credits.crew.find(row => row.known_for_department === 'Directing') || 'Unknown Director';
-        return Director.name;
-    } 
-    
 
 
-    useEffect(() => {//fetching a movie arr from api
+    useEffect(() => {//fetching a show arr from api
         
+        reset();
+
         (async () => {
-            const result = await movieByID(movieId);
+            const result = await showByID(showId);
 
-            setMovie(result);
-            console.log('moviesArr', result);
-            
-            if(result?.success === false) setRETURN(true); 
+            setShow(result);
+            console.log('showsArr', result);
 
-            
-
-            const video = result?.videos?.results.find(row => row.type === 'Trailer' && row.site === 'YouTube');
-            
+            //get trailers
+            const video = result.videos.results.find(row => row.type === 'Trailer' && row.site === 'YouTube');
             if (video) setTrailerKey(video.key);
 
-            console.log('movie_id', movieId)
+            //get acters
+            const theCast = [...result.credits.cast];
+            console.log('From the Cast', theCast);
+            //remove 2x Member form crew
+            const singleMemberCrew = [];
+            result.credits.crew.forEach(col => {
+
+                const isActor = col.known_for_department === 'Acting';
+
+                const double = singleMemberCrew.find(member => member?.id === col.id);
+
+                if(!double && isActor) singleMemberCrew.push(col);
+            });
+            
+            //remove 2x Member of crew from cast
+            const theCrew = singleMemberCrew.filter(col => col.known_for_department === 'Acting' &&  !theCast.some(castMember => castMember.id === col.id));
+            setAllActors([...theCast, ...theCrew]);
+
+            // set selected_season to latest
+            const latest_season = result.seasons.sort((a, b) => b.season_number - a.season_number).find(row => row.episode_count !== 0).season_number;
+
+            setSelectedSeason(latest_season);
+            
         })();
     
         
     }, [location.state?.id])
+
+    useEffect(() => {//Get the episodes of the selected season
+        if(selected_season === null) return;
+       
+        (async() => {//fetching episodes
+            const result = await episodesBySeason(showId, selected_season);
+            console.log(`Season ${selected_season}: `, result);
+            setEpisodes(result);
+
+            //set the selected episode to none
+            setSelectedEpisode(null);
+        })();
+       
+        
+    }, [selected_season]);
+    
 
 
     useEffect(() => {//setting Slider to slide 0
         if (swiperRef.current) {
             swiperRef.current.slideTo(0, 0); // slideTo(index, speed)
         }
-    }, [movie]);
+    }, [show]);
     
     
-    if(!movieId) return <div>No Results</div>
-    if(!movie) return <div>Loading...</div>
-    if(RETURN) return(<div className="flex w-full h-[100dvh] overflow-hidden justify-center items-center text-4xl">No Data Found. ------ Go Back</div>);
+    if(!showId) return <div>No Results</div>
+    if(!show) return <div>Loading...</div>
 
     const countryCode = navigator.language.split('-')[1];
-    const LINK = movie['watch/providers']?.results[countryCode]?.link || "";
+    const LINK = show['watch/providers']?.results[countryCode]?.link || "";
 
-
+    if(allActors) {
+        console.log('All Actors ', allActors);
+    }
+    
     return (
        <>
             <Header />
             <section className='w-full relative py-5'>
                 <div className='w-[1200px] max-w-full px-5 mx-auto'>
-                    <h1 className="text-4xl">{movie.title}</h1>
-                    <span className="text-sm italic">{formatDate(movie.release_date)} • {movie.runtime}min</span>
+                    <h1 className="text-4xl">{show.name}</h1>
+                    <span className="text-sm italic">TV • {Released_Ended(show.first_air_date, show.last_air_date)} • {show.episode_run_time[0] || 0}min</span>
 
                     {/* 3 Rows */}
                     <div className="grid  grid-cols-12 -mx-1">
                         {/* Poster */}
                         <div className="col-span-3 px-1">
-                            <img src={`${IMAGE_PATH}${movie.poster_path}`} className="w-full h-[400px] object-cover object-center"/>
+                            <img src={`${IMAGE_PATH}${show.poster_path}`} className="w-full h-[400px] object-cover object-center"/>
                         </div>
                         {/* Video */}
                         <div className="col-span-6 px-1">
@@ -140,7 +197,7 @@ function MovieDetails() {
                                     width="100%"
                                     height="100%"
                                     src={`https://www.youtube.com/embed/${trailerKey}?mute=1&controls=1`}
-                                    title="Movie Trailer"
+                                    title="show Trailer"
                                     className="w-full h-full border-0"
                                     allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 ></iframe>
@@ -154,14 +211,14 @@ function MovieDetails() {
                             <div className="h-[50%] p-2 rounded-lg overflow-hidden">
                                 <div className="w-full h-full bg-gray-400 flex justify-center items-center rounded-lg flex-col" onClick={() => handleZoomedContent('videos')}>
                                     <FontAwesomeIcon icon={faPlay} className="text-4xl cursor-pointer"/>
-                                    <div className="block">{movie.videos.results.length} Videos</div>
+                                    <div className="block">{show.videos.results.length} Videos</div>
                                 </div>
                             </div>
                             {/* Photos Collection */}
                             <div className="h-[50%] p-2 rounded-lg overflow-hidden">
                                 <div className="w-full h-full bg-gray-400 flex justify-center items-center rounded-lg flex-col" onClick={() => handleZoomedContent('photos')}>
                                     <FontAwesomeIcon icon={faImages } className="text-4xl cursor-pointer"/>
-                                    <div className="block">{movie.images.posters.length} Photos</div>
+                                    <div className="block">{show.images.posters.length} Photos</div>
                                 </div>
                             </div>
                         </div>
@@ -173,7 +230,7 @@ function MovieDetails() {
                 <div className='w-[1200px] max-w-full px-5 mx-auto'>
                     <ul className="flex items-center -mx-2">
                         {
-                            movie.genres.map(row => (
+                            show.genres.map(row => (
                                 <li className="after:content-['•'] after:absolute relative after:right-0 after:top-1/2 after:-translate-y-1/2 pr-3 last:pr-2 last:after:content-none px-2">{row.name}</li>
                             ))
                         }
@@ -181,16 +238,24 @@ function MovieDetails() {
 
                     <div className="grid grid-cols-12 -mx-3">
                         <div className="col-span-8 px-3">
-                            <p>{movie.overview}</p>
-                            <p>Director <span className="text-red-500">{movieDirector()}</span></p>
+                            <p>{show.overview}</p>
+                            <p>Director: &nbsp;
+                                {show.created_by.map((row, index) => (
+                                    <>
+                                        <span className="text-red-500">{row.name}</span>
+                                        
+                                        {index < show.created_by.length - 1 && <span> • </span>}
+                                    </>
+                                ))}
+                            </p>
                             <h3>Ratings</h3>
                             <div className="flex flex-row items-center gap-x-2">
                                 <FontAwesomeIcon icon={faStar} className="text-2xl text-yellow-400"/>
                                 <div>
                                     {/* Ratings */}
-                                    <p className="font-semibold text-lg">{movie.vote_average.toFixed(1)} <span className="text-white/80 text-base">/ 10</span></p>
+                                    <p className="font-semibold text-lg">{show.vote_average.toFixed(1)} <span className="text-white/80 text-base">/ 10</span></p>
                                     {/* Votes */}
-                                    <p className="text-sm text-white/80">{JSON.stringify(movie.vote_count)}</p>
+                                    <p className="text-sm text-white/80">{JSON.stringify(show.vote_count)}</p>
                                 </div>
                             </div>
                         </div>
@@ -209,21 +274,77 @@ function MovieDetails() {
 
             <section className='w-full relative py-5'>
                 <div className='w-[1200px] max-w-full px-5 mx-auto'>
+                    
+                        
+                    {/* Episodes Selector */}
+                    <div className="w-full text-right mb-5">
+
+                        <select
+                            onChange={(e) => handleSelectedEpisode(episodes?.episodes[e.target.value - 1]?.episode_number || "")}
+                            className="bg-gray-800 text-white rounded px-2 py-1 ml-3"
+                            value={selected_episode || ""}
+                            >
+
+                            <option value="" >None</option>
+
+                            {episodes?.episodes.map((col) => (
+                                <option key={col.episode_number} value={col.episode_number}>
+                                Episode {col.episode_number}
+                                </option>
+                            ))}
+                        </select>
+                        
+                    </div>
+
+                    <div className="grid grid-cols-12 -mx-2">    
+
+                        {/* Vertical */}
+                        <div className="px-2 col-span-1">
+                            <div className="bg-gray-900 h-auto w-full flex flex-col items-center rounded-2xl p-[5px_10px_10px]">
+                                <h3 className="mb-5 text-center text-white/75 text-[20px] tracking-tight">Seasons</h3>
+
+                                {
+                                    show.seasons.sort((a,b) => b.season_number - a.season_number).map(row => (
+                                        <div className={`${selected_season === row.season_number ? "bg-red-500 font-semibold" : "bg-gray-400 font-normal"} w-9 h-9 rounded-full inline-flex items-center justify-center text-white mb-3 [&:last-of-type]:mb-0 cursor-pointer`} onClick={() => setSelectedSeason(row.season_number)}>{row.season_number}</div>
+                                    ))
+                                }
+                                
+                            </div>
+                        </div>
+
+                        <div className="px-2 col-span-11 flex flex-row h-max">
+                           
+                            {/* Content */}
+
+                            {
+                                selected_season !== null && episodes ? 
+                                ( <Episodes selected_season={selected_season} selected_episode={selected_episode} episodes={episodes}/> ) 
+                                : 
+                                (<div className="w-full mt-auto mb-auto text-center text-2xl">No Results</div>)
+                            }
+                           
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section className='w-full relative py-5'>
+                <div className='w-[1200px] max-w-full px-5 mx-auto'>
                     <h2>Cast</h2>
                     
                     <div className='w-full h-auto relative'>
-                        <button className="custom-prev-movie absolute -left-10 top-1/2 -translate-y-1/2 bg-white text-black p-2 rounded-full shadow">
+                        <button className="custom-prev-show absolute -left-10 top-1/2 -translate-y-1/2 bg-white text-black p-2 rounded-full shadow">
                             ←
                         </button>
-                        <button className="custom-next-movie absolute -right-10 top-1/2 -translate-y-1/2 bg-white text-black p-2 rounded-full shadow">
+                        <button className="custom-next-show absolute -right-10 top-1/2 -translate-y-1/2 bg-white text-black p-2 rounded-full shadow">
                             →
                         </button>
                         <Swiper
                             modules={[Navigation, Pagination]}
                             onSwiper={(swiper) => (swiperRef.current = swiper)}
                             navigation={{
-                            nextEl: '.custom-next-movie',
-                            prevEl: '.custom-prev-movie',
+                            nextEl: '.custom-next-show',
+                            prevEl: '.custom-prev-show',
                             }}
                             
                             spaceBetween={30}
@@ -231,7 +352,7 @@ function MovieDetails() {
                             className=""
                         >
                             {
-                                movie.credits.cast.map(row => (
+                                allActors.map(row => (
                                     <SwiperSlide>
                                         <div>
                                             <img src={`${IMAGE_PATH}${row.profile_path}`} alt={`${row.name}`}/>
@@ -249,7 +370,7 @@ function MovieDetails() {
             </section>
 
             {/* Recommendations Block */}
-            <RecomendedMovies movie_id={movieId} />
+            <RecomendedShows show_id={showId} />
 
             {/* Comments Block */}
             <section className='w-full relative py-5'>
@@ -288,7 +409,7 @@ function MovieDetails() {
                                     <span className="text-white/80 text-sm">4 minutes ago</span>
                                 </div>
                                 <div>
-                                    <p>This movie is so amazing, i can watch it again.</p>
+                                    <p>This show is so amazing, i can watch it again.</p>
                                 </div>
                                 <div className="flex items-center gap-x-4">
                                     {/* like */}
@@ -413,7 +534,7 @@ function MovieDetails() {
                             <div className="w-[90vw] max-w-4xl aspect-video rounded-xl overflow-hidden shadow-lg m-auto">
                                 <iframe
                                     src={`https://www.youtube.com/embed/${zoomedVideos[currentIndex].key}?mute=1&controls=1`}
-                                    title="Movie Trailer"
+                                    title="show Trailer"
                                     className="w-full h-full border-0"
                                     allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                     allowFullScreen
@@ -438,4 +559,4 @@ function MovieDetails() {
     )
 }
 
-export default MovieDetails
+export default ShowsDetails
