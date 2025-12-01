@@ -47,16 +47,16 @@ function Trending() {
     useEffect(() => {
         
        (async () => {
-        const resultMovie = await popularMovies_or_Shows('movie', 1);
-        const resultShows = await popularMovies_or_Shows('tv', 1);
-        const dataMovies = resultMovie.results.sort((a, b) => b.popularity - a.popularity).filter(row => row.poster_path !== null).slice(0, 7);
-        const dataShows = resultShows.results.sort((a, b) => b.popularity - a.popularity).filter(row => row.poster_path !== null).slice(0,7);
-        
-        setMovies(dataMovies);
-        setShows(dataShows);
+            const resultMovie = await popularMovies_or_Shows('movie', 1);
+            const resultShows = await popularMovies_or_Shows('tv', 1);
+            const dataMovies = resultMovie.results.sort((a, b) => b.popularity - a.popularity).filter(row => row.poster_path !== null).slice(0, 7);
+            const dataShows = resultShows.results.sort((a, b) => b.popularity - a.popularity).filter(row => row.poster_path !== null).slice(0,7);
+            
+            setMovies(dataMovies);
+            setShows(dataShows);
 
-        //set genres
-        setGenres(await Fetch_Genres());
+            //set genres
+            setGenres(await Fetch_Genres());
         })();
       
     }, [])

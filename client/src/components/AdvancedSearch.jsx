@@ -57,24 +57,42 @@ async function Fetch_Languages() {
 
 function AdvancedSearch() {
 
+    //localstorage call
+    const storageJSON = localStorage.getItem("searchPrevVals");
+    const storageParse = JSON.parse(storageJSON);
+
+    console.log('stored values ', storageParse);
     
     //getting type and query from browse
     const location = useLocation();
-    const q = location?.state?.query || "";
-    const t = q === "" && location?.state?.type === "multi" || !location?.state?.type ? "movie" : location?.state?.type;
+    let q = null
+    let t = null
 
-    
+   if (!storageParse) {
+        q = location.state?.query || "";
+        t = q === "" && location.state?.type === "multi" || !location.state?.type
+            ? "movie"
+            : location.state?.type;
+    }
+    console.log(`From Browse values: `, {title: q, type: t});
+
     //variables
-    const [title, setTitle] = useState(q);
-    const [type, setType] = useState(t);
-    const [year, setYear] = useState(null);
-    const [selectedGenre, set_selectedGenre] = useState(null);
-    const [page, setPage] = useState(1);
+    const [title, setTitle] = useState(q || storageParse?.query || "");
+    const [type, setType] = useState(t || storageParse?.media_type || "movie");
+    const [year, setYear] = useState(storageParse?.currentYear || null);
+    const [selectedGenre, set_selectedGenre] = useState(storageParse?.currentGenre || null);
+    const [page, setPage] = useState(storageParse?.currentPage || 1);
     const [totalPages, setTotalPages] = useState(null);
     const [genres, setGenres] = useState(null);
     const [genersLoading, setGenersLoading] = useState(true);
     const [languages, setLanguages] = useState(null);
-    const [selectedLanguage, setSelectedLanguage] = useState("en");
+    const [selectedLanguage, setSelectedLanguage] = useState(storageParse?.currentlanguage || "en");
+
+    const changesTracker = {
+        currentPage: storageParse?.currentPage || null,
+        query: storageParse?.query || null,
+        type: storageParse?.media_type || null,
+    };
 
     //variables for skeletonLoading
     const [isLoading, setLoading] = useState(false);
@@ -93,6 +111,21 @@ function AdvancedSearch() {
 
         setTitle(str);
 
+    }
+
+    const storeCurrentValues = (query, media_type, currentPage, currentLanguage, currentYear, currentGenre) => {
+        const arr = {
+            query: query,
+            media_type: media_type,
+            currentPage: currentPage,
+            currentlanguage: currentLanguage,
+            currentYear: currentYear,
+            currentGenre: currentGenre,
+        }
+        
+        const str = JSON.stringify(arr);
+
+        localStorage.setItem("searchPrevVals", str);
     }
 
 
@@ -138,6 +171,10 @@ function AdvancedSearch() {
         //remove loading
         setLoading(false);
 
+        console.log('SELECTED YEAR: ', year);
+        //save to localstorage
+        storeCurrentValues(title, type, page, selectedLanguage, year, selectedGenre);
+
         console.log('Array: ', final);
         
         //getting array of content
@@ -169,10 +206,10 @@ function AdvancedSearch() {
         
         //change the type to the selected value
         setType(val);
-        
-        //reset the selected genre and selected year to null
+
+
+        //reset genres to default
         set_selectedGenre(null);
-        setYear(null);
     }
 
 
@@ -182,7 +219,11 @@ function AdvancedSearch() {
             setGenres(dataG || []);
 
             const dataL = await Languages();
-            setLanguages(dataL || []);
+            const AZ_sort = dataL.sort((a, b) => 
+                a.english_name.localeCompare(b.english_name)
+            );
+
+            setLanguages(AZ_sort || []);
 
             setGenersLoading(false);
         };
@@ -196,8 +237,20 @@ function AdvancedSearch() {
     useEffect(() => {//dedecting input changes 
 
         if(genersLoading) return;
+        
+        console.log({
+            action:'Important',
+            type:`${storageParse?.media_type} === ${type}`,
+            page: page,
+        })
+        
+        const toPageOne = (
+            storageParse?.query !== title || storageParse?.media_type !== type || 
+            storageParse?.currentlanguage !== selectedLanguage || storageParse?.currentYear !== year || 
+            storageParse?.currentGenre !== selectedGenre
+        );
 
-        if (page !== 1) {
+        if (page !== 1 && toPageOne ) {
             setPage(1);
         } else {
             fetching();
@@ -229,7 +282,6 @@ function AdvancedSearch() {
     }, [page, totalPages]);
 
     useEffect(() => {// fetching on page change
-        console.log(`Current page is: `, page);
         if(genersLoading) return;
 
         fetching();
@@ -240,7 +292,7 @@ function AdvancedSearch() {
 
     return (
         <>
-            <section className='w-full  pt-5 pb-15 relative'>
+            <section className='w-full  pt-5 pb-15'>
                 <div className='w-[1200px] max-w-full px-5 mx-auto '>
                     {/* Controls */}
                     <div >
@@ -285,7 +337,7 @@ function AdvancedSearch() {
                                 }
                             </select>
 
-                            <select id="year-filter" value={selectedLanguage || "en"} disabled={title ? true : false} onChange={(e) => setYear(Number(e.target.value) || null)} className={`w-auto  border border-gray-700 ${title === "" ? '!text-white' : '!text-gray-500 !bg-gray-800'} text-gray-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2.5 appearance-none`}>
+                            <select id="language-filter" value={selectedLanguage} disabled={title ? true : false} onChange={(e) => setSelectedLanguage(e.target.value)} className={`w-auto  border border-gray-700 ${title === "" ? '!text-white' : '!text-gray-500 !bg-gray-800'} text-gray-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2.5 appearance-none`}>
                                 {
                                     languages && languages.map(cell => (
                                         <option value={cell.iso_639_1} >{cell.english_name}</option>

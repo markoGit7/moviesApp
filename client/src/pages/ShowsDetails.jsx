@@ -1,13 +1,13 @@
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 
-import {showByID, episodesBySeason} from '../api/movies.js'
+import {contentByID, episodesBySeason} from '../api/movies.js'
 //Font Awesome Icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar, faPlay, faImages, faX, faChevronCircleLeft, faChevronCircleRight, faHeart, faShare, faCommentDots, faUserTie, faThumbsUp, faThumbsDown, faReply, faAngleDown  } from "@fortawesome/free-solid-svg-icons";
 
 //components
-import {Header, RecomendedShows, Episodes} from '../components/Components_collection.js'
+import {Header, RecomendedShows, Episodes, Comments} from '../components/Components_collection.js'
 
 //slider
 import { Swiper, SwiperSlide } from 'swiper/react'
@@ -17,6 +17,21 @@ import { Navigation, Pagination, Autoplay } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
+
+
+// FUNCTION: force logout 
+async function forceLog_out() {
+    localStorage.removeItem('access_token');
+
+    // Remove cookie
+    const response_s = await fetch('http://localhost:3000/auth/logout', {
+        method: 'POST',
+        
+        credentials: 'include',
+    });
+
+    window.location.reload(); // 🔄 refresh the page
+}
 
 const IMAGE_PATH = 'https://image.tmdb.org/t/p/w500';
 function ShowsDetails() {
@@ -39,7 +54,16 @@ function ShowsDetails() {
     const [currentIndex, setCurrentIndex] = useState(0); 
 
     //user
-    const [hasUser, setUser] = useState(false);
+    const token = Boolean(localStorage.getItem('access_token'));
+
+
+    // checking if token exists
+    useEffect(() => {
+        
+        console.table([{question: "Does Token Exists? ", answer: token ? "YES" : "NO"}], ['question', 'answer']);
+      
+    }, [token]);
+    
 
     const Released_Ended = (start, end) => {//function for returning release-end date of a tv show
         const release = start?.split('-')[0];
@@ -105,7 +129,7 @@ function ShowsDetails() {
         reset();
 
         (async () => {
-            const result = await showByID(showId);
+            const result = await contentByID(showId, 'tv');
 
             setShow(result);
             console.log('showsArr', result);
@@ -164,7 +188,104 @@ function ShowsDetails() {
             swiperRef.current.slideTo(0, 0); // slideTo(index, speed)
         }
     }, [show]);
+
+
+    // USEFFECT: Liking System
+    const [like, setLike] = useState(null);
+
     
+    // SHOW IF LIKED ON LOAD
+    useEffect(() => {
+        
+        if(!token) return;
+
+        const isAlreadyLiked = async() => {
+            const response = await fetch('http://localhost:3000/like/verify',{
+                method: 'POST',
+                
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                    'Content-Type': 'application/json',
+                },
+
+                credentials: "include", 
+
+                body: JSON.stringify({
+                    post_id: showId,
+                    media_type: "tv"
+                }),
+                
+            });
+
+
+            // when refresh token expires, detect
+            if(response.status === 401) {
+                forceLog_out();
+                return;
+            }
+
+            const isLiked = await response.json();
+            console.log("VERIFYING LIKED? ", isLiked.liked ? "LIKED" : "NOT LIKED");
+
+            // EXPIRED ACCESS TOKEN
+            const newToken = response.headers.get("x-new-access-token");
+            if(newToken) {
+                localStorage.setItem('access_token', newToken);
+            }
+            
+            setLike(isLiked.liked);
+
+        };
+
+        isAlreadyLiked();
+        
+    }, []);
+    
+    
+    const handleLike = async() => {
+        if(!token) {
+            alert(`You need to log in to Like this post`);
+            return;
+        }
+
+        const response = await fetch('http://localhost:3000/like',{
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                'Content-Type': 'application/json',
+            },
+
+            credentials: "include", 
+            
+            body: JSON.stringify({
+                post_id: showId,
+                media_type: "tv"
+            }),
+        }); 
+
+        // when refresh token expires, detect
+        if(response.status === 401) {
+            forceLog_out();
+            return;
+        }
+
+        const isLiked = await response.json();
+        
+        setLike(isLiked.liked);
+
+       // EXPIRED ACCESS TOKEN
+        const newToken = response.headers.get("x-new-access-token");
+        if(newToken) {
+            localStorage.setItem('access_token', newToken);
+        }
+
+
+        // recall likes count
+        window.dispatchEvent(new Event("storageUpdate"));
+    }
+    
+    
+
     
     if(!showId) return <div>No Results</div>
     if(!show) return <div>Loading...</div>
@@ -172,9 +293,6 @@ function ShowsDetails() {
     const countryCode = navigator.language.split('-')[1];
     const LINK = show['watch/providers']?.results[countryCode]?.link || "";
 
-    if(allActors) {
-        console.log('All Actors ', allActors);
-    }
     
     return (
        <>
@@ -263,9 +381,17 @@ function ShowsDetails() {
                             <button onClick={() => LINK && window.open(LINK, '_blank')} className={`${LINK ? 'bg-red-500 cursor-pointer' : 'bg-red-300 cursor-default pointer-events-none'} min-w-32 p-[12px_4px] rounded-lg`}>Watch</button>
 
                             <div className="flex gap-x-5 mt-4">
-                                <FontAwesomeIcon onClick={() => hasUser ? null : alert('Log in first')} icon={faHeart} className="text-2xl cursor-pointer"/>
-                                <FontAwesomeIcon onClick={() => hasUser ? null : alert('Log in first')} icon={faShare} className="text-2xl cursor-pointer"/>
-                                <FontAwesomeIcon onClick={() => hasUser ? null : alert('Log in first')} icon={faCommentDots} className="text-2xl cursor-pointer"/>
+                                <FontAwesomeIcon onClick={handleLike} icon={faHeart} className={`text-2xl cursor-pointer ${like ? 'text-red-500' : 'text-white'}`}/>
+                                <FontAwesomeIcon 
+                                    onClick={() => {
+                                        document.getElementById("commentsSection")?.scrollIntoView({
+                                            behavior: "smooth",
+                                        })
+                                    }}
+                                    
+                                    icon={faCommentDots} 
+                                    className="text-2xl cursor-pointer"
+                                />
                             </div>
                         </div>
                     </div>
@@ -373,110 +499,7 @@ function ShowsDetails() {
             <RecomendedShows show_id={showId} />
 
             {/* Comments Block */}
-            <section className='w-full relative py-5'>
-                <div className='w-[1200px] max-w-full px-5 mx-auto'>
-                    {/* Counts/Ajustments */}
-                    <div className="mb-5">
-                        <h3 className="font-bold text-lg">12 Comments</h3>
-                    </div>
-                    {/* Enter Coment */}
-                    <div className="w-full h-auto relative pl-13 mb-10">
-                        <div className="bg-blue-400 rounded-full w-10 h-10 p-1 flex justify-center items-center absolute left-0 top-1/2 -translate-y-1/2">
-                            <FontAwesomeIcon onClick={() => hasUser ? null : alert('Log in first')} icon={faUserTie} className="text-[26px] cursor-pointer text-blue-700"/>
-                        </div>
-                        <form action="#">
-                            <textarea
-                                onInput={(e) => {
-                                    e.target.style.height = "auto";
-                                    e.target.style.height = `${e.target.scrollHeight}px`;
-                                }}
-                                className="w-full resize-none overflow-hidden border-b-white border-b-1 outline-none"
-                                rows="1"
-                                placeholder="Add a comment..."
-                            ></textarea>
-                        </form>
-                    </div>
-
-                    {/* All Comments Block */}
-                    <div>
-                        {/* Comment */}
-                        <div className="relative pl-13"> 
-                            <img src="/images/mike_o_hearn.webp" alt="" width={900} height={900} className="w-10 h-10 object-cover object-center rounded-full absolute top-0 left-0"/>
-                            {/* Content */}
-                            <div className="col-span-8">
-                                <div className="flex gap-x-5 items-center">
-                                    <h3>@mikeOhearn</h3>
-                                    <span className="text-white/80 text-sm">4 minutes ago</span>
-                                </div>
-                                <div>
-                                    <p>This show is so amazing, i can watch it again.</p>
-                                </div>
-                                <div className="flex items-center gap-x-4">
-                                    {/* like */}
-                                    <div>
-                                        <FontAwesomeIcon icon={faThumbsUp} className="text-base cursor-pointer"/>
-                                        <span>105</span>
-                                    </div>
-
-                                    {/* dislike */}
-                                    <div>
-                                        <FontAwesomeIcon icon={faThumbsDown} className="text-base cursor-pointer"/>
-                                        <span>15</span>
-                                    </div>
-
-                                    {/* replay */}
-
-                                    <div>
-                                        <FontAwesomeIcon icon={faReply} className="text-base cursor-pointer"/>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {/* Replys */}
-                        <div className="pl-16 mt-6">
-                            {/* arrow replys */}
-                            <div className="flex items-center gap-x-2">
-                                <FontAwesomeIcon icon={faAngleDown} className="text-lg cursor-pointer rotate-180"/>
-                                <img src="/images/mike_o_hearn.webp" alt="" width={900} height={900} className="w-6 h-6 object-cover object-center rounded-full"/>
-                                <span>• 25 replies</span>
-                            </div>
-                            {/* Single replay */}
-                            <div className="relative pl-13 mt-4"> 
-                                <img src="/images/einstine.jpg" alt="" width={203} height={248} className="w-10 h-10 object-cover object-center rounded-full absolute top-0 left-0"/>
-                                {/* Content */}
-                                <div className="col-span-8">
-                                    <div className="flex gap-x-5 items-center">
-                                        <h3>@einstine123</h3>
-                                        <span className="text-white/80 text-sm">1 week ago</span>
-                                    </div>
-                                    <div>
-                                        <p><span className="text-blue-500">@mikeOhearn</span> I agree with you. My favourite scene was the fighting calculator battle.</p>
-                                    </div>
-                                    <div className="flex items-center gap-x-4">
-                                        {/* like */}
-                                        <div>
-                                            <FontAwesomeIcon icon={faThumbsUp} className="text-base cursor-pointer"/>
-                                            <span>1</span>
-                                        </div>
-
-                                        {/* dislike */}
-                                        <div>
-                                            <FontAwesomeIcon icon={faThumbsDown} className="text-base cursor-pointer"/>
-                                            <span></span>
-                                        </div>
-
-                                        {/* replay */}
-
-                                        <div>
-                                            <FontAwesomeIcon icon={faReply} className="text-base cursor-pointer"/>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            <Comments post={showId} media_type={'tv'} token={token} forceLog_out={forceLog_out}/>
 
             {/* Zoom View Photos Content */}
             {

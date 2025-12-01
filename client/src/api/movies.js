@@ -92,30 +92,18 @@ export async function Languages () {
   return data;
 };
 
-//get Movie by ID
+//get API by ID
 
-export async function movieByID(movie_id) {
+export async function contentByID(api_id, api_type) {
     
     const result = await fetch(
-        `${PATH}movie/${movie_id}?api_key=${API_KEY}&append_to_response=credits,images,videos,watch/providers`
+        `${PATH}${api_type}/${api_id}?api_key=${API_KEY}&append_to_response=credits,images,videos,watch/providers`
     );
 
 
     return result.json();
 };
 
-
-//get Show by ID
-
-export async function showByID(show_id) {
-    
-    const result = await fetch(
-        `${PATH}tv/${show_id}?api_key=${API_KEY}&append_to_response=credits,images,videos,watch/providers`
-    );
-
-
-    return result.json();
-};
 
 //get episodes from season of a show
 export async function episodesBySeason(show_id, selected_season) {

@@ -17,7 +17,7 @@ function ContentDisplay({array, type}) {
 
     const navigate = useNavigate();
 
-    if(!array) return(<div>Empty</div>);
+    if(!array.length) return(<div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl'>Empty</div>);
 
     return (
         <>

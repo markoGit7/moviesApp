@@ -1,8 +1,8 @@
 import React from 'react'
 
-function LoginButton() {
+function LoginButton({onClick}) {
     return (
-        <button className='font-medium cursor-pointer'>Login</button>
+        <button onClick={onClick} className='font-medium cursor-pointer'>Login</button>
     )
 }
 

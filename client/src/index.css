@@ -33,3 +33,16 @@ select::-webkit-scrollbar-thumb, #trendingAll_Content_Parent::-webkit-scrollbar-
 select::-webkit-scrollbar-thumb:hover, #trendingAll_Content_Parent::-webkit-scrollbar-thumb {
   background-color: #64748b;
 }
+
+#onlyDesktopNavigation a {
+  color: white;
+  font-size: 16px;
+  padding: 0 12px;
+  transition: all 0.3s ease-in-out;
+}
+
+#onlyDesktopNavigation a.active {
+  color: #f5060a;
+  font-weight: 500;
+  transition: all 0.3s ease-in-out;
+}
