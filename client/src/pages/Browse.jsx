@@ -8,6 +8,11 @@ import {searchContent} from '../api/movies.js'
 //images
 import Background from '../assets/browse_page/browse_bg.png'
 
+//Font Awesome Icons
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
+
+
 //TMDB image Path
 const IMAGE_PATH = 'https://image.tmdb.org/t/p/w500';
 
@@ -35,6 +40,9 @@ function Browse() {
         const result = await searchContent(str, type, 1);
 
         const howManyDisplayed = type === 'multi' ? 2 : 4;
+
+        console.log("now I will display you suggestions: ", howManyDisplayed);
+
         const Five_Popular_Movies = result.results.filter(col => col.poster_path !== null && (col?.media_type ? col.media_type === 'movie' : true)).sort((a, b) => b.popularity - a.popularity).slice(0, howManyDisplayed);
 
         const Five_Popular_Shows = result.results.filter(col => col.poster_path !== null && (col?.media_type ? col.media_type === 'tv' : true)).sort((a, b) => b.popularity - a.popularity).slice(0, howManyDisplayed);
@@ -73,41 +81,49 @@ function Browse() {
         };
 
         suggest(input);
-    }, [input]);
+    }, [input, type]);
     
 
     return (
-        <section className='w-full h-[100dvh] bg-cover bg-center relative'  style={{ backgroundImage: `url(${Background})` }}>
+        <section className='w-full h-[100dvh] bg-cover bg-center relative overflow-hidden'  style={{ backgroundImage: `url(${Background})` }}>
 
             {/* Back Arrow */}
-
+            <FontAwesomeIcon icon={faChevronLeft} className='absolute text-4xl z-[70] top-3 left-3 text-white cursor-pointer' onClick={() => navigate('/')}/>
             <div className='w-[1200px] max-w-full px-5 mx-auto h-full z-30 relative'>
-                <div className='flex h-full items-center'>
-                    <form className='w-full text-center flex' onSubmit={handleNavigation}>
-                        <select onChange={(e) => setType(e.target.value)} className="!rounded-l-2xl !rounded-r-0">
-                            <option value="multi">ALL</option>
-                            <option value="movie">Movies</option>
-                            <option value="tv">Shows</option>
-                        </select>
-                        
-                        <div className='relative inline-block grow-1'>
-                            <input type='text' onChange={(e) => setInput(e.target.value)} className='bg-white w-full h-full outline-none ring-0 max-w-full p-[10px_7px] text-black'/>
+                
+                <div className='flex h-full flex-col justify-center gap-y-10'>
+                    
+                    <div>
+                        <h1 className='text-[45px] font-medium text-center'>Discover Movies & TV Shows</h1>
+                    </div>
 
-                            {/* Auto Filter */}
-                            <div className='absolute left-0 top-full pt-5 pl-3 h-[calc((100dvh-64px)/2)]'>
-                                {
-                                    suggestions && suggestions.map(col => (
-                                        <div className='w-full flex mb-4 [&:last-of-type]:mb-0' onClick={() => handleSelected_Navigation(col)}>
-                                            <img src={`${IMAGE_PATH}${col.poster_path}`} className='w-20 h-20 object-center object-cover cursor-pointer'/>
-                                            <p>{col.title || col.name}</p>
-                                        </div>
-                                    ))
-                                }
+                    <div className='flex items-center '>
+                        <form className='w-full text-center flex' onSubmit={handleNavigation}>
+                            <select onChange={(e) => setType(e.target.value)} className="!rounded-l-2xl !rounded-r-0">
+                                <option value="multi">ALL</option>
+                                <option value="movie">Movies</option>
+                                <option value="tv">Shows</option>
+                            </select>
+                            
+                            <div className='relative inline-block grow-1'>
+                                <input type='text' onChange={(e) => setInput(e.target.value)} className='bg-white w-full h-full outline-none ring-0 max-w-full p-[10px_7px] text-black'/>
+
+                                {/* Auto Filter */}
+                                <div className='absolute left-0 top-[calc(100%-7px)] pt-5 pl-3 h-[calc((100dvh-64px)/2)]'>
+                                    {
+                                        suggestions && suggestions.map(col => (
+                                            <div className='w-full flex mb-4 [&:last-of-type]:mb-0' onClick={() => handleSelected_Navigation(col)}>
+                                                <img src={`${IMAGE_PATH}${col.poster_path}`} className='w-20 h-20 object-center object-cover cursor-pointer'/>
+                                                <p>{col.title || col.name}</p>
+                                            </div>
+                                        ))
+                                    }
+                                </div>
                             </div>
-                        </div>
 
-                        <button type='submit' className='w-[100px] max-w-full bg-red-500 text-white p-5 cursor-pointer rounded-r-2xl'>Search</button>
-                    </form>
+                            <button type='submit' className='w-[100px] max-w-full bg-red-500 text-white p-5 cursor-pointer rounded-r-2xl'>Search</button>
+                        </form>
+                    </div>
                 </div>
             </div>
 

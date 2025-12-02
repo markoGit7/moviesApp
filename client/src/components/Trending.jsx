@@ -9,6 +9,10 @@ import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 
+//Font Awesome Icons
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronLeft, faChevronRight  } from "@fortawesome/free-solid-svg-icons";
+
 //Api
 import {popularMovies_or_Shows, Genres} from '../api/movies.js'
 const IMAGE_PATH = 'https://image.tmdb.org/t/p/w500';
@@ -66,18 +70,16 @@ function Trending() {
         
         <section className='w-full relative py-5'>
             <div className='w-[1200px] max-w-full px-5 mx-auto'>
-                <h2>Trending</h2>
+                <div className='px-[50px]'>
+                    <h2 className='text-2xl font-medium'>Trending</h2>
+                </div>
 
 
                 <div className="w-full py-8">
-                    <div className='w-full h-auto relative'>
+                    <div className='w-full h-auto relative px-[50px] mb-10'>
                         {/* Custom arrows */}
-                        <button className="custom-prev-movie absolute -left-10 top-1/2 -translate-y-1/2 bg-white text-black p-2 rounded-full shadow">
-                            ←
-                        </button>
-                        <button className="custom-next-movie absolute -right-10 top-1/2 -translate-y-1/2 bg-white text-black p-2 rounded-full shadow">
-                            →
-                        </button>
+                        <FontAwesomeIcon icon={faChevronLeft} className="custom-prev-movie absolute left-0 top-1/2 -translate-y-1/2 text-white shadow text-[40px]" ></FontAwesomeIcon>
+                        <FontAwesomeIcon icon={faChevronRight} className="custom-next-movie absolute right-0 top-1/2 -translate-y-1/2 text-white shadow text-[40px]"></FontAwesomeIcon>
 
                         <Swiper
                             modules={[Navigation, Pagination]}
@@ -95,7 +97,7 @@ function Trending() {
                                 displayMovies.map(row => (
                                     <SwiperSlide>
                                         <div>
-                                            <span onClick={() => navigate(`/movie/${slugify(row.title)}`, { state: { id: row.id } })}>
+                                            <span onClick={() => navigate(`/movie/${slugify(row.title)}`, { state: { id: row.id } })} className='cursor-pointer'>
                                                 <img src={`${IMAGE_PATH}${row.poster_path}`} className="w-full h-64 object-cover"/>
                                                 <h3>{row.title}</h3>
                                             </span>
@@ -115,22 +117,20 @@ function Trending() {
 
                             {/* Last Slide */}
                             <SwiperSlide>
-                                <h2 className='w-full h-full flex justify-center items-center' onClick={() => navigate(`/all`, { state: { type: "movie" } })}>
-                                    See All
-                                </h2>
+                                <div className="h-64 flex justify-center items-center bg-gray-100 hover:bg-gray-300 transition-colors duration-300 ease-in-out rounded cursor-pointer" onClick={() => navigate(`/all`, { state: { type: "movie" } })}>
+                                    <h2 className='text-black font-medium'>
+                                        See All
+                                    </h2>
+                                </div>
                             </SwiperSlide>
                         </Swiper>
 
                     </div>
                     
-                    <div className='w-full h-auto relative'>
+                    <div className='w-full h-auto relative px-[50px]'>
                         {/* Custom arrows */}
-                        <button className="custom-prev-show absolute -left-10 top-1/2 -translate-y-1/2 bg-white text-black p-2 rounded-full shadow">
-                            ←
-                        </button>
-                        <button className="custom-next-show absolute -right-10 top-1/2 -translate-y-1/2 bg-white text-black p-2 rounded-full shadow">
-                            →
-                        </button>
+                        <FontAwesomeIcon icon={faChevronLeft} className="custom-prev-show absolute left-0 top-1/2 -translate-y-1/2 text-white shadow text-[40px]"></FontAwesomeIcon>
+                        <FontAwesomeIcon icon={faChevronRight} className="custom-next-show absolute right-0 top-1/2 -translate-y-1/2 text-white shadow text-[40px]"></FontAwesomeIcon>
 
                         <Swiper
                             modules={[Navigation, Pagination]}
@@ -148,7 +148,7 @@ function Trending() {
                                 displayShows.map(row => (
                                     <SwiperSlide>
                                         <div>
-                                            <span onClick={() => navigate(`/tv/${slugify(row.name)}`, { state: { id: row.id } })}>
+                                            <span onClick={() => navigate(`/tv/${slugify(row.name)}`, { state: { id: row.id } })} className='cursor-pointer'> 
                                                 <img src={`${IMAGE_PATH}${row.poster_path}`} className="w-full h-64 object-cover"/>
                                                 <h3>{row.name}</h3>
                                             </span>
@@ -168,9 +168,11 @@ function Trending() {
 
                             {/* Last Slide */}
                             <SwiperSlide>
-                                <h2 className='w-full h-full flex justify-center items-center' onClick={() => navigate(`/all`, { state: { type: "tv" } })}>
-                                   See All
-                                </h2>
+                                <div className="h-64 flex justify-center items-center bg-gray-100 hover:bg-gray-300 transition-colors duration-300 ease-in-out rounded cursor-pointer" onClick={() => navigate(`/all`, { state: { type: "tv" } })}>
+                                    <h2 className='text-black font-medium'>
+                                    See All
+                                    </h2>
+                                </div>
                             </SwiperSlide>
 
                         </Swiper>

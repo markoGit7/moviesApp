@@ -5,7 +5,7 @@ import { useParams, useLocation, useNavigate } from "react-router-dom"
 
 //Font Awesome Icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircle, faTrashCan  } from "@fortawesome/free-solid-svg-icons";
+import { faCircle, faTrashCan, faChevronLeft  } from "@fortawesome/free-solid-svg-icons";
 
 
 // import TMDB API
@@ -223,13 +223,21 @@ function Liked() {
         <>
             <section className='w-full relative py-5'>
                 <div className='w-[1200px] max-w-full px-5 mx-auto'>
-                    {/* trash */}
-                    <span className='flex flex-row items-center'>
-                        <FontAwesomeIcon icon={faTrashCan} onClick={() => handleDelete()} className={`${deleteActive === true ? '!text-red-500' : '!text-white'} text-2xl text-white hover:text-red-500 transition-colors duration-300 ease-in-out`} />
-                        <span className={`text-red-500 ${selectedToRemove.length > 0 ? 'translate-x-0 w-max opacity-100 ' : '-translate-x-7 w-0 opacity-0'} -z-10 transition-all duration-300 ease-in-out`}>({selectedToRemove.length})</span>
-                    </span>
+                    
+                    <div className='flex flex-row items-center justify-between'>
 
-                    <div className='flex flex-wrap -mx-3 gap-y-6'>
+                        {/* Back Arrow */}
+                        <FontAwesomeIcon icon={faChevronLeft} className='text-xl  text-white cursor-pointer' onClick={() => navigate(-1)}/>
+
+                        {/* trash */}
+                        <div className='inline-block relative'>
+                            <FontAwesomeIcon icon={faTrashCan} onClick={() => handleDelete()} className={`${deleteActive === true ? '!text-red-500' : '!text-white'} text-2xl text-white hover:text-red-500 transition-colors duration-300 ease-in-out`} />
+                            <span className={`text-red-500 absolute top-1/2 -translate-y-1/2 ${selectedToRemove.length > 0 ? 'right-7 w-auto opacity-100 ' : 'right-0 w-0 opacity-0'} -z-10 transition-all duration-300 ease-in-out`}>({selectedToRemove.length})</span>
+                        </div>
+                        
+                    </div>
+
+                    <div className='flex flex-wrap -mx-3 gap-y-6 mt-10'>
                         {
                             likedData.map(col => (
                                 <div className='px-3 w-1/4'>

@@ -12,6 +12,10 @@ import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 
+//Font Awesome Icons
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faChevronLeft, faChevronRight  } from "@fortawesome/free-solid-svg-icons";
+
 const IMAGE_PATH = 'https://image.tmdb.org/t/p/w500';
 
 //function for slugifying
@@ -63,28 +67,26 @@ function RecomendedMovies({movie_id}) {
         }
     }, [movies]);
     
-    if(noRelated) return(<div>No Recomended Found</div>)
+    if(noRelated) {
+        return;
+    }
        
     
     return (
         <section className='w-full relative py-5'>
             <div className='w-[1200px] max-w-full px-5 mx-auto'>
-                <h2 className='text-2xl'>Recommended</h2>
-                <div className='w-full h-auto relative'>
+                <h2 className='text-2xl mb-5 ml-[25px]'>Recommended</h2>
+                <div className='w-full h-auto relative px-[25px]'>
                     {/* Custom arrows */}
-                    <button className="custom-rec-prev-movie absolute -left-10 top-1/2 -translate-y-1/2 bg-white text-black p-2 rounded-full shadow">
-                        ←
-                    </button>
-                    <button className="custom-rec-next-movie absolute -right-10 top-1/2 -translate-y-1/2 bg-white text-black p-2 rounded-full shadow">
-                        →
-                    </button>
+                    <FontAwesomeIcon icon={faChevronLeft} className="custom-rec-prev absolute left-0 top-1/2 -translate-y-1/2 text-white shadow text-[25px]"></FontAwesomeIcon>
+                    <FontAwesomeIcon icon={faChevronRight} className="custom-rec-next absolute right-0 top-1/2 -translate-y-1/2 text-white shadow text-[25px]"></FontAwesomeIcon>
 
                     <Swiper
                         modules={[Navigation, Pagination]}
                         onSwiper={(swiper) => (swiperRef.current = swiper)}
                         navigation={{
-                        nextEl: '.custom-rec-next-movie',
-                        prevEl: '.custom-rec-prev-movie',
+                        nextEl: '.custom-rec-next',
+                        prevEl: '.custom-rec-prev',
                         }}
                         
                         spaceBetween={30}
@@ -113,11 +115,6 @@ function RecomendedMovies({movie_id}) {
                                 </SwiperSlide>
                             ))
                         }
-
-                        {/* Last Slide */}
-                        <SwiperSlide>
-                            <h2 className='w-full h-full flex justify-center items-center'>See All</h2>
-                        </SwiperSlide>
                     </Swiper>
 
                 </div>

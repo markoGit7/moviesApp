@@ -40,6 +40,10 @@ function Header() {
 
     useEffect(() => {
       
+        // If local storage contains previous search stored remove it
+        const searchPrev = localStorage.getItem('searchPrevVals');
+        if(searchPrev) localStorage.removeItem('searchPrevVals');
+
         const getUser = localStorage.getItem('access_token') || null;
 
         if(!getUser) return;

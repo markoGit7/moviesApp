@@ -51,6 +51,10 @@ function TrendingAll() {
     };
 
     useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
+    useEffect(() => {
         setItems([]);
         setPage(1);
         setHasMore(true);
@@ -58,7 +62,7 @@ function TrendingAll() {
     }, [type]);
 
 
-    
+   
 
     return (
         <>

@@ -4,7 +4,8 @@ import { useEffect, useState, useRef } from "react";
 import {contentByID, episodesBySeason} from '../api/movies.js'
 //Font Awesome Icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar, faPlay, faImages, faX, faChevronCircleLeft, faChevronCircleRight, faHeart, faShare, faCommentDots, faUserTie, faThumbsUp, faThumbsDown, faReply, faAngleDown  } from "@fortawesome/free-solid-svg-icons";
+import { faStar, faPlay, faImages, faX, faChevronCircleLeft, faChevronCircleRight, faHeart,  faCommentDots, faChevronLeft, faChevronRight  } from "@fortawesome/free-solid-svg-icons";
+
 
 //components
 import {Header, RecomendedShows, Episodes, Comments} from '../components/Components_collection.js'
@@ -18,6 +19,9 @@ import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 
+
+// Import image for actors without image
+import missing_actor from '../assets/actors/missing_actor.jpg'
 
 // FUNCTION: force logout 
 async function forceLog_out() {
@@ -135,7 +139,9 @@ function ShowsDetails() {
             console.log('showsArr', result);
 
             //get trailers
-            const video = result.videos.results.find(row => row.type === 'Trailer' && row.site === 'YouTube');
+            const video = result.videos.results.find(row => row.type === 'Trailer' && row.site === 'YouTube') || null;
+            
+            console.log("Video: ", video);
             if (video) setTrailerKey(video.key);
 
             //get acters
@@ -306,7 +312,7 @@ function ShowsDetails() {
                     <div className="grid  grid-cols-12 -mx-1">
                         {/* Poster */}
                         <div className="col-span-3 px-1">
-                            <img src={`${IMAGE_PATH}${show.poster_path}`} className="w-full h-[400px] object-cover object-center"/>
+                            <img src={`${IMAGE_PATH}${show.poster_path}`} className="w-full h-[400px] object-cover object-center rounded-lg"/>
                         </div>
                         {/* Video */}
                         <div className="col-span-6 px-1">
@@ -320,22 +326,22 @@ function ShowsDetails() {
                                     allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 ></iframe>
                             ) : (
-                                <p className="text-center text-gray-400">No trailer available.</p>
+                                <div className="text-white bg-gray-500 h-full rounded-lg flex items-center justify-center">No trailer available.</div>
                             )}
                         </div>
                         {/* Phosts/Videos */}
                         <div className="col-span-3 px-1">
                             {/* Videos Collection */}
                             <div className="h-[50%] p-2 rounded-lg overflow-hidden">
-                                <div className="w-full h-full bg-gray-400 flex justify-center items-center rounded-lg flex-col" onClick={() => handleZoomedContent('videos')}>
-                                    <FontAwesomeIcon icon={faPlay} className="text-4xl cursor-pointer"/>
+                                <div className="w-full h-full bg-gray-400 flex cursor-pointer justify-center items-center rounded-lg flex-col" onClick={() => handleZoomedContent('videos')}>
+                                    <FontAwesomeIcon icon={faPlay} className="text-4xl"/>
                                     <div className="block">{show.videos.results.length} Videos</div>
                                 </div>
                             </div>
                             {/* Photos Collection */}
                             <div className="h-[50%] p-2 rounded-lg overflow-hidden">
-                                <div className="w-full h-full bg-gray-400 flex justify-center items-center rounded-lg flex-col" onClick={() => handleZoomedContent('photos')}>
-                                    <FontAwesomeIcon icon={faImages } className="text-4xl cursor-pointer"/>
+                                <div className="w-full h-full bg-gray-400 flex justify-center cursor-pointer items-center rounded-lg flex-col" onClick={() => handleZoomedContent('photos')}>
+                                    <FontAwesomeIcon icon={faImages } className="text-4xl"/>
                                     <div className="block">{show.images.posters.length} Photos</div>
                                 </div>
                             </div>
@@ -456,15 +462,12 @@ function ShowsDetails() {
 
             <section className='w-full relative py-5'>
                 <div className='w-[1200px] max-w-full px-5 mx-auto'>
-                    <h2>Cast</h2>
+                    <h2 className="ml-[25px] mb-5 text-xl">Cast</h2>
                     
-                    <div className='w-full h-auto relative'>
-                        <button className="custom-prev-show absolute -left-10 top-1/2 -translate-y-1/2 bg-white text-black p-2 rounded-full shadow">
-                            ←
-                        </button>
-                        <button className="custom-next-show absolute -right-10 top-1/2 -translate-y-1/2 bg-white text-black p-2 rounded-full shadow">
-                            →
-                        </button>
+                    <div className='w-full h-auto relative px-[25px]'>
+                        <FontAwesomeIcon icon={faChevronLeft} className="custom-prev-show absolute left-0 top-1/2 -translate-y-1/2 text-white shadow text-[25px]"></FontAwesomeIcon>
+                        <FontAwesomeIcon icon={faChevronRight} className="custom-next-show absolute right-0 top-1/2 -translate-y-1/2 text-white shadow text-[25px]"></FontAwesomeIcon>
+
                         <Swiper
                             modules={[Navigation, Pagination]}
                             onSwiper={(swiper) => (swiperRef.current = swiper)}
@@ -481,7 +484,7 @@ function ShowsDetails() {
                                 allActors.map(row => (
                                     <SwiperSlide>
                                         <div>
-                                            <img src={`${IMAGE_PATH}${row.profile_path}`} alt={`${row.name}`}/>
+                                            {row.profile_path ? (<img src={`${IMAGE_PATH}${row.profile_path}`} alt={`${row.name}`} className="w-full h-[340px] object-center object-cover"/>) : (<img src={missing_actor} alt={`${row.name}`} className="w-full h-[340px] object-center object-cover"/>)}
                                             <h3>{row.name}</h3>
                                             <span className="block">{row.character}</span>
                                         </div>

@@ -17,7 +17,7 @@ import {ContentDisplay, SceletonLoading} from './Components_collection.js';
 
 //Font Awesome Icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowUpAZ, faMagnifyingGlass  } from "@fortawesome/free-solid-svg-icons";
+import { faArrowUpAZ, faMagnifyingGlass, faChevronLeft } from "@fortawesome/free-solid-svg-icons";
 
 
 //function for fetching genres
@@ -87,6 +87,8 @@ function AdvancedSearch() {
     const [genersLoading, setGenersLoading] = useState(true);
     const [languages, setLanguages] = useState(null);
     const [selectedLanguage, setSelectedLanguage] = useState(storageParse?.currentlanguage || "en");
+
+    const navigate = useNavigate();
 
     const changesTracker = {
         currentPage: storageParse?.currentPage || null,
@@ -297,15 +299,21 @@ function AdvancedSearch() {
                     {/* Controls */}
                     <div >
                         
-                        <div className='flex mb-5 justify-between items-center'>
-                            {/* Input */}
-                            <div className='inline-block relative w-[650px] max-w-full'>
-                                <input type='text' defaultValue={title} onKeyDown={(e) => e.key === 'Enter' ? handleInputSubmit(e.target.value) : null}  onBlur={(e) => handleInputSubmit(e.target.value)} placeholder='Search by title...' className='border-gray-500 w-full focus:border-gray-200 p-[12px_12px_12px_38px] border-1 rounded-lg outline-none text-lg'/>
-                                <FontAwesomeIcon icon={faMagnifyingGlass} className="text-lg  absolute left-3 top-1/2 -translate-y-1/2"/>
+                        <div className='flex mb-5 justify-between items-center -mx-2'>
+                            <div className='flex gap-x-2 px-2'>
+                                {/* Back arrow */}
+                                <div className='rounded-lg border border-gray-500 p-2 grow-0 self-center'>
+                                    <FontAwesomeIcon icon={faChevronLeft} className='text-xl  text-white cursor-pointer' onClick={() => navigate('/browse')}/>
+                                </div>
+                                {/* Input */}
+                                <div className='inline-block relative w-[600px] max-w-full'>
+                                    <input type='text' defaultValue={title} onKeyDown={(e) => e.key === 'Enter' ? handleInputSubmit(e.target.value) : null}  onBlur={(e) => handleInputSubmit(e.target.value)} placeholder='Search by title...' className='border-gray-500 w-full focus:border-gray-200 p-[12px_12px_12px_38px] border-1 rounded-lg outline-none text-lg'/>
+                                    <FontAwesomeIcon icon={faMagnifyingGlass} className="text-lg  absolute left-3 top-1/2 -translate-y-1/2"/>
+                                </div>
                             </div>
 
                             {/* Pages Count */}
-                            <div className='text-lg text-gray-300 inline-block'>
+                            <div className='text-lg text-gray-300 inline-block px-2'>
                                 Total Pages: {totalPages} | Page: {page}
                             </div>
                         </div>
