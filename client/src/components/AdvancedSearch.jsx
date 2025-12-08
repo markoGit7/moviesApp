@@ -137,7 +137,7 @@ function AdvancedSearch() {
 
         //set loading to true
         setLoading(true);
-
+        
         if(title === "") {// fetching from discovery 
             
             //fetch
@@ -169,6 +169,7 @@ function AdvancedSearch() {
             setYear(null);
             set_selectedGenre(null);
         }
+       
 
         //remove loading
         setLoading(false);

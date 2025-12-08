@@ -5,7 +5,7 @@ import { useParams, useLocation, useNavigate } from "react-router-dom"
 
 //Font Awesome Icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircle, faTrashCan, faChevronLeft  } from "@fortawesome/free-solid-svg-icons";
+import { faTrashCan, faChevronLeft  } from "@fortawesome/free-solid-svg-icons";
 
 
 // import TMDB API
@@ -240,22 +240,30 @@ function Liked() {
                     <div className='flex flex-wrap -mx-3 gap-y-6 mt-10'>
                         {
                             likedData.map(col => (
-                                <div className='px-3 w-1/4'>
-                                    <span className='relative' onClick={() => handlePost(col.id, col.title, col.media_type)}>
-                                        <img src={`${IMAGE_PATH}${col.poster_path}`} className="w-full h-64 object-cover"/>
-                                        <h3>{col.title}</h3>
+                                <div className="px-3 w-40 md:w-48 lg:w-56">
+                                    <span
+                                        className="relative block cursor-pointer"
+                                        onClick={() => handlePost(col.id, col.title, col.media_type)}
+                                    >
+                                        <img
+                                            src={`${IMAGE_PATH}${col.poster_path}`}
+                                            className="w-full h-64 object-cover rounded-xl"
+                                        />
+                                        
+                                        <h3 className="text-center mt-2 text-white text-sm">
+                                            {col.title}
+                                        </h3>
 
-                                        {/* Delete Doth */}
-                                        {
-                                            deleteActive 
-                                                &&
-                                            <FontAwesomeIcon
-                                                icon={faCircle}
-                                                className={`text-white text-xl absolute top-1 left-1 ring-2 ring-black ring-inset rounded-full ${selectedToRemove.some(rec => rec.post_id === col.id) ? '!text-blue-500': '!text-white'}`}
+                                        {deleteActive && (
+                                            <div
+                                                className={`absolute top-2 left-2 w-5 h-5 rounded-full border-2 border-black ${
+                                                    selectedToRemove.some(rec => rec.post_id === col.id)
+                                                        ? 'bg-blue-500'
+                                                        : 'bg-white'
+                                                }`}
                                             />
-                                        }
+                                        )}
                                     </span>
-                                
                                 </div>
                             ))
                         }

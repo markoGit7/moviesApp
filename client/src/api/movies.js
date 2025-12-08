@@ -1,6 +1,6 @@
 //Movies search
 // Searching by genre I need to type: https://api.themoviedb.org/3/genre/movie/list?api_key=${API_KEY}
-const API_KEY = 'bc6d5157b1c8e44c82e59ab3da41bc44';
+const API_KEY = import.meta.env.VITE_API_KEY;
 const PATH = 'https://api.themoviedb.org/3/';
 
 //Create a function for this: https://api.themoviedb.org/3/discover/movie?api_key=bc6d5157b1c8e44c82e59ab3da41bc44&with_genres=12, to make the categories work diferently

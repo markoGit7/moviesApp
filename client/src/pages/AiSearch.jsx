@@ -76,7 +76,7 @@ function AiSearch() {
         }
 
         console.log('Searching movie/show that contains... ', {description: query});
-
+        const start = performance.now();
         const response = await fetch('http://localhost:3000/myQuery', {
             method: 'POST',
             headers: {
@@ -90,7 +90,8 @@ function AiSearch() {
 
         const data_from_server = await response.json();
         const popularity_based_data = data_from_server.sort((a, b) => b.popularity - a.popularity);
-
+        const end = performance.now();
+        console.log("Loading time: ", end - start, "ms");
         console.log('JSON File From http://localHost:3000/myQuery ', data_from_server);
         setLoading(false);
         setResults(popularity_based_data || null);

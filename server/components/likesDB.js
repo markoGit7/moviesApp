@@ -36,11 +36,16 @@ export async function Like(user_id, post_id, media_type) {
     };
 
     //insert new record
-    await db.query(
-      `INSERT INTO liked_post (user_id, post_id, media_type)
-       VALUES (?, ?, ?)`,
-      [user_id, post_id, media_type]
-    );
+    try{
+        await db.query(
+            `INSERT INTO liked_post (user_id, post_id, media_type)
+            VALUES (?, ?, ?)`,
+            [user_id, post_id, media_type]
+        );
+    } catch(error) {
+        console.log(error);
+    }
+    
 
 
     //return liked = true
@@ -90,7 +95,7 @@ export async function everyLiked(user_id) {
 };
 
 //everything that user has liked
-export async function Delete(user_id, arr) {
+export async function DeleteLiked(user_id, arr) {
     const errors = [];
     const query = 'DELETE FROM liked_post WHERE user_id = ? AND post_id = ? AND media_type = ?'
 

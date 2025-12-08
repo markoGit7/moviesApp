@@ -31,6 +31,33 @@ function User_profile({info}) {
         window.location.reload(); // 🔄 refresh the page
     }
 
+    const handleDeleteAccount = async() => {
+        const answer = confirm("Are you sure you want to delete your account permanently?");
+
+        if(!answer) return;
+
+        const response_s = await fetch('http://localhost:3000/auth/delete', {
+            method: 'DELETE',
+            
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                'Content-Type': 'application/json',
+            },
+
+            credentials: 'include', // ✔️ include cookies in request
+        });
+
+        if (response_s.status === 204) {
+            alert("Account deleted successfully");
+            localStorage.removeItem('access_token');
+            window.location.reload(); // 🔄 refresh the page
+            return;
+        }
+
+        const data = await response_s.json();
+        console.log(data);
+    }
+
     const handlePictureChange = async(e) => {
         const file = e.target.files && e.target.files[0];
 
@@ -96,7 +123,6 @@ function User_profile({info}) {
 
                 <div className="flex flex-col leading-tight">
                 <p className="text-sm font-medium text-white">{userInfo?.user_name || "User"}</p>
-                <p className="text-xs text-gray-300">View profile</p>
                 </div>
 
                 <input
@@ -112,6 +138,7 @@ function User_profile({info}) {
             <div className="absolute right-0 mt-2 w-40 bg-[#1f2937] text-white rounded-xl shadow-lg opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all duration-200 origin-top-right z-50">
                 <ul className="py-2 text-sm">
                     <li onClick={handleLogout} className="px-4 py-2 hover:bg-white/10 cursor-pointer text-red-400">Logout</li>
+                    <li onClick={handleDeleteAccount} className="px-4 py-2 hover:bg-white/10 cursor-pointer text-red-400">Delete Account</li>
                 </ul>
             </div>
         </div>

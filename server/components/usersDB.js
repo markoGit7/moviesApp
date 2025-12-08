@@ -139,6 +139,24 @@ export async function logIn(user_email, user_password) {
     return fb;
 }
 
+export async function DeleteUser(user_id) {
+
+
+    const query = `DELETE FROM users WHERE id = ?`;
+
+    try {
+    
+        await db.query(query,[user_id]);
+    
+    } 
+    catch(error) {
+        return { status: 500, error: error.message };
+    }
+    
+
+    return { status: 204 };
+}
+
 // getting user details like username, profile picture
 export async function userDetails(user_id) {
     const query = `SELECT * FROM users WHERE id = ?`;

@@ -82,12 +82,17 @@ function HeroSection() {
                         {content &&
                         content.map((row, index) => (
                             <motion.div
-                            key={row.id + activeTab}
-                            initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                            animate={{ opacity: 1, y: 0, scale: index === 1 ? 1 : 0.85 }}
-                            exit={{ opacity: 0, y: -20, scale: 0.9 }}
-                            transition={{ duration: 0.4, ease: 'easeInOut' }}
-                            className="px-3"
+                                key={row.id + activeTab}
+                                initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                                animate={{
+                                    opacity: 1,
+                                    y: 0,
+                                    scale: index === 1 ? 1 : 0.85,
+                                    flexBasis: index === 1 ? "40%" : "30%",
+                                }}
+                                exit={{ opacity: 0, y: -20, scale: 0.9 }}
+                                transition={{ duration: 0.4, ease: "easeInOut" }}
+                                className="px-3"
                             >
 
                                 <div className='w-full relative overflow-hidden'>

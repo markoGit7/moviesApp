@@ -7,10 +7,10 @@ import cookieParser from "cookie-parser";
 import {Find_Closest_Match} from './components/embedder.js'
 
 //import from userDB.js
-import { singUp, logIn, userDetails, userUpdates} from './components/usersDB.js'
+import { singUp, logIn, userDetails, userUpdates, DeleteUser} from './components/usersDB.js'
 
 // import from likesDB.js
-import {checkLiked, Like, likesCountTrack, everyLiked, Delete} from './components/likesDB.js'
+import {checkLiked, Like, likesCountTrack, everyLiked, DeleteLiked} from './components/likesDB.js'
 
 //import from commentsDB.js
 import {addComent, addReply, addReaction, getComments, deleteComment} from './components/commentsDB.js'
@@ -92,12 +92,35 @@ app.post('/auth/login', async(req, res) => {
 app.post('/auth/logout', async(req, res) => {
     res.clearCookie("refresh_token", {
         httpOnly: true,
-        secure: false,  // must match!
-        sameSite: "lax", // must match!
-        path: "/"        // default path
+        secure: false,  
+        sameSite: "lax", 
+        path: "/"        
     });
 
     return res.status(200).json();
+});
+
+// Delete account
+app.delete('/auth/delete', auth, async(req, res) => {
+    
+    const user = req.user;
+
+    const deleteUserDB = await DeleteUser(user.id);
+
+    //show db error if exists
+    if(deleteUserDB.status === 500) {
+        return res.status(500).json({message: deleteUserDB.error})
+    }
+
+    // Remove cookie
+    res.clearCookie("refresh_token", {
+        httpOnly: true,
+        secure: false,  
+        sameSite: "lax", 
+        path: "/"        
+    });
+
+    res.status(deleteUserDB.status).json({message: "User Deleted!!!"});
 });
 
 //Logged in user info
@@ -210,7 +233,7 @@ app.delete('/like/delete', auth, async(req, res) => {
     const user = req.user;
     const { data } = req.body;
 
-    const response_db = await Delete(user.id, data);
+    const response_db = await DeleteLiked(user.id, data);
 
     if (response_db.errors) {
         return res.status(500).json(response_db);
