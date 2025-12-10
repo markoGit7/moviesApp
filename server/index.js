@@ -164,13 +164,16 @@ app.post('/user/info', auth, async(req, res) => {
 // User updates
 app.post("/user/update", auth, upload.single("profileImage"), async (req, res) => {
   
+
     
     try {
         const user = req.user;
         const file = req.file;
+        const file_type = req.file.mimetype;
         const MAX_SIZE = 200 * 1024;
 
 
+        
 
 
         //denie >200 file sizes
@@ -180,7 +183,7 @@ app.post("/user/update", auth, upload.single("profileImage"), async (req, res) =
         }
 
 
-        const response_db = await userUpdates(user.id, file.buffer);
+        const response_db = await userUpdates(user.id, file.buffer, file_type);
         
         
         if(response_db === null) {

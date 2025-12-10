@@ -3,6 +3,9 @@ import {connectDB} from './dbConnect.js'
 // Import {hash, token}
 import bcrypt from "bcrypt";
 
+// Buffer
+import { Buffer } from "buffer";
+
 // Import token.js
 import {createToken, verifyToken, createRefreshToken} from './token.js' 
 
@@ -162,23 +165,30 @@ export async function userDetails(user_id) {
     const query = `SELECT * FROM users WHERE id = ?`;
     
     const [row] = await db.query(query,[user_id]);
+    
+    const mimetype = row[0].profile_image_type;
+
+    const imageBase64 = `data:${mimetype};base64,${row[0].profile_image.toString('base64')}`;
+    
+    // update user with usable profile_image
+    row[0].profile_image = imageBase64;
 
     return row[0];
 }
 
-export async function userUpdates(id, user_profileImage) {
+export async function userUpdates(id, user_profileImage, profile_image_type) {
 
-    const [row] = await db.query("SELECT * FROM users WHERE id = ? AND profile_image = ?", [id, user_profileImage]);
+    const [row] = await db.query("SELECT * FROM users WHERE id = ? AND profile_image = ? AND profile_image_type = ?", [id, user_profileImage, profile_image_type]);
 
     if(row.length > 0) {
         return null;
     }
 
-    const query = `UPDATE users SET profile_image = ? WHERE id = ?`;
+    const query = `UPDATE users SET profile_image = ?, profile_image_type = ? WHERE id = ?`;
 
     try {
         
-        await db.query(query, [user_profileImage, id]);
+        await db.query(query, [user_profileImage, profile_image_type, id]);
     
     } catch (error) {
         return {status: 500, error: `${error}`}

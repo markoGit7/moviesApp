@@ -1,6 +1,5 @@
 import React, {useState, useEffect} from 'react'
 
-
 //import components
 import {Info} from './Components_collection.js'
 
@@ -81,18 +80,6 @@ function Comments({post, media_type, token, forceLog_out}) {
             localStorage.setItem('access_token', newToken);
         }
 
-
-        //decode profile image
-        results.forEach(col => {
-            if(col.profile_image) {
-                const uint8 = new Uint8Array(col.profile_image.data);
-
-                let binary = "";
-                uint8.forEach(byte => binary += String.fromCharCode(byte));
-
-                col.profile_image = `data:image/jpeg;base64,${btoa(binary)}`;
-            }
-        })
 
         //get total comments
         setTotalComments(results.length);

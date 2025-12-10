@@ -1,5 +1,8 @@
 import {connectDB} from './dbConnect.js'
 
+// Buffer
+import { Buffer } from "buffer";
+
 const db = await connectDB();
 
 //FUNCTION: add new comment to DB
@@ -147,6 +150,7 @@ export async function getComments(user, post_id, media_type) {
         ANY_VALUE(u.user_name) AS user_name,
         ANY_VALUE(c.parent_id) AS parent_id,
         ANY_VALUE(u.profile_image) AS profile_image,
+        ANY_VALUE(u.profile_image_type) AS profile_image_type,
         
         SUM(CASE WHEN cr.reaction = 'like' THEN 1 ELSE 0 END) AS total_likes,
         SUM(CASE WHEN cr.reaction = 'dislike' THEN 1 ELSE 0 END) AS total_dislikes,
@@ -167,7 +171,19 @@ export async function getComments(user, post_id, media_type) {
 
     const [rows] = await db.query(query, [user?.id, post_id, media_type]);
 
-    // set the user_name that is equal to myUserName say "Me" 
+
+    // Convert to Base64 usable Image
+    rows.forEach(col => {
+        if(rows[0].profile_image && Buffer.isBuffer(col.profile_image)) {
+
+            const imageBase64 = `data:${col.profile_image_type};base64,${col.profile_image.toString('base64')}`;
+
+            col.profile_image = imageBase64;
+        }
+    })
+
+
+    // set the user_name that is equal to myUserName say "Me" and Usable profile_image
     const final = rows.map(col => {
         return {
             ...col,
