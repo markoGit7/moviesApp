@@ -92,8 +92,8 @@ app.post('/auth/login', async(req, res) => {
     // Set refresh token cookie
     res.cookie("refresh_token", userLogin.refresh_token, {
         httpOnly: true,
-        secure: false,
-        sameSite: "lax",
+        secure: true, //false if localhosted OR true if public hosted 
+        sameSite: "none", //lax if localhosted OR none if public hosted
         maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
     });
     
@@ -110,8 +110,8 @@ app.post('/auth/login', async(req, res) => {
 app.post('/auth/logout', async(req, res) => {
     res.clearCookie("refresh_token", {
         httpOnly: true,
-        secure: false,  
-        sameSite: "lax", 
+        secure: true, //false if localhosted OR true if public hosted 
+        sameSite: "none", //lax if localhosted OR none if public hosted
         path: "/"        
     });
 
