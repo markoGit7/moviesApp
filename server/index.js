@@ -40,17 +40,8 @@ app.use(cors({
 // Middleware for JSON
 app.use(express.json());
 
-// root server
-app.get('/', (req, res) => {
-    res.send('Server is running ✅');
-});
 
-// Start the server
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
 
-if(false ) {
 
 // AI search rout
 app.post('/myQuery', async(req, res) => {
@@ -357,4 +348,3 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
-}
