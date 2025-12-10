@@ -4,19 +4,19 @@ import multer from "multer";
 import cookieParser from "cookie-parser";
 
 //import from embedder.js
-// import {Find_Closest_Match} from './components/embedder.js'
+import {Find_Closest_Match} from './components/embedder.js'
 
 //import from userDB.js
-// import { singUp, logIn, userDetails, userUpdates, DeleteUser} from './components/usersDB.js'
+import { singUp, logIn, userDetails, userUpdates, DeleteUser} from './components/usersDB.js'
 
 // import from likesDB.js
-// import {checkLiked, Like, likesCountTrack, everyLiked, DeleteLiked} from './components/likesDB.js'
+import {checkLiked, Like, likesCountTrack, everyLiked, DeleteLiked} from './components/likesDB.js'
 
 //import from commentsDB.js
-// import {addComent, addReply, addReaction, getComments, deleteComment} from './components/commentsDB.js'
+import {addComent, addReply, addReaction, getComments, deleteComment} from './components/commentsDB.js'
 
 // import from token.js
-// import {auth} from './components/token.js'
+import {auth} from './components/token.js'
 const app = express();
 const PORT = 3000;
 
