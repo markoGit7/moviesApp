@@ -27,9 +27,25 @@ const upload = multer({ storage });
 // Allow Cookie parser
 app.use(cookieParser());
 
+// FrontEnds to contact with
+const allowedOrigins = [
+    "http://localhost:5173",       // your local frontend
+    process.env.FRONTEND_URL  // your deployed frontend
+];
+
 // ✅ Allow requests from your Vite frontend
 app.use(cors({
-    origin: process.env.FRONTEND_URL,
+    origin: function (origin, callback) {
+        // allow requests with no origin (like mobile apps or curl)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+        } else {
+        return callback(new Error("Not allowed by CORS"));
+        }
+    },
+
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],

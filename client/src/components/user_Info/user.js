@@ -49,6 +49,7 @@ export default async function info() {
 
     const result = await response.json();
 
+    console.log('User INFO: ', result);
     const newToken = response.headers.get("x-new-access-token");
     
     if(newToken) {
