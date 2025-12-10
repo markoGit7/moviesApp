@@ -133,8 +133,8 @@ app.delete('/auth/delete', auth, async(req, res) => {
     // Remove cookie
     res.clearCookie("refresh_token", {
         httpOnly: true,
-        secure: false,  
-        sameSite: "lax", 
+        secure: true, //false if localhosted OR true if public hosted 
+        sameSite: "none", //lax if localhosted OR none if public hosted
         path: "/"        
     });
 
