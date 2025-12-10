@@ -58,7 +58,7 @@ function Comments({post, media_type, token, forceLog_out}) {
     });
 
     const loadComments = async() => {
-        const response_s = await fetch('http://localhost:3000/comments/get', {
+        const response_s = await fetch(`${import.meta.env.VITE_REQUEST_PATH}comments/get`, {
             method: 'POST',
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -135,7 +135,7 @@ function Comments({post, media_type, token, forceLog_out}) {
         if(replyOn.author && replyOn.comment_id) {
             console.log('Add new comment with parent_id = ', replyOn.comment_id);
             
-            response_s = await fetch('http://localhost:3000/comments/replies', {
+            response_s = await fetch(`${import.meta.env.VITE_REQUEST_PATH}comments/replies`, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -154,7 +154,7 @@ function Comments({post, media_type, token, forceLog_out}) {
         
         } else {
 
-            response_s = await fetch('http://localhost:3000/comments', {
+            response_s = await fetch(`${import.meta.env.VITE_REQUEST_PATH}comments`, {
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -242,7 +242,7 @@ function Comments({post, media_type, token, forceLog_out}) {
             return;
         }
 
-        const response_s = await fetch('http://localhost:3000/comments/reactions', {
+        const response_s = await fetch(`${import.meta.env.VITE_REQUEST_PATH}comments/reactions`, {
             method: 'POST',
 
             headers: {
@@ -291,7 +291,7 @@ function Comments({post, media_type, token, forceLog_out}) {
 
         console.log(`Deleting Comment:\nID: ${comment_id}\nAuthor: ${userInfo.user_name}`);
         
-        const response_s = await fetch('http://localhost:3000/comments/delete', {
+        const response_s = await fetch(`${import.meta.env.VITE_REQUEST_PATH}comments/delete`, {
             method: 'POST',
             
             headers: {

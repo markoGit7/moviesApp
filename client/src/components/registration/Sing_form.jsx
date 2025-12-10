@@ -56,7 +56,7 @@ function Sing_form() {
         },['username','email', 'password', 'confirmPassword']);
 
 
-        const response = await fetch('http://localhost:3000/auth/signup', {
+        const response = await fetch(`${import.meta.env.VITE_REQUEST_PATH}auth/signup`, {
             method: 'POST',
             headers: {
             'Content-Type': 'application/json',

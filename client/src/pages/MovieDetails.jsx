@@ -27,7 +27,7 @@ async function forceLog_out() {
     localStorage.removeItem('access_token');
 
     // Remove cookie
-    const response_s = await fetch('http://localhost:3000/auth/logout', {
+    const response_s = await fetch(`${import.meta.env.VITE_REQUEST_PATH}auth/logout`, {
         method: 'POST',
         
         credentials: 'include',
@@ -151,7 +151,7 @@ function MovieDetails() {
         if(!token) return;
 
         const isAlreadyLiked = async() => {
-            const response = await fetch('http://localhost:3000/like/verify',{
+            const response = await fetch(`${import.meta.env.VITE_REQUEST_PATH}like/verify`,{
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -194,7 +194,7 @@ function MovieDetails() {
             return;
         }
 
-        const response = await fetch('http://localhost:3000/like',{
+        const response = await fetch(`${import.meta.env.VITE_REQUEST_PATH}like`,{
             method: 'POST',
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('access_token')}`,

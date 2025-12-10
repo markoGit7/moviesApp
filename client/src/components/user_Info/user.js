@@ -16,7 +16,7 @@ async function forceLog_out() {
     localStorage.removeItem('access_token');
 
     // Remove cookie
-    const response_s = await fetch('http://localhost:3000/auth/logout', {
+    const response_s = await fetch(`${import.meta.env.VITE_REQUEST_PATH}auth/logout`, {
         method: 'POST',
         
         credentials: 'include',
@@ -32,7 +32,7 @@ export default async function info() {
         return null;
     }
 
-    const response = await fetch('http://localhost:3000/user/info', {
+    const response = await fetch(`${import.meta.env.VITE_REQUEST_PATH}user/info`, {
         method: 'POST',
         
         headers: {

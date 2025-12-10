@@ -21,7 +21,7 @@ function Log_form() {
         },['email', 'password']);
 
 
-        const response = await fetch('http://localhost:3000/auth/login', {
+        const response = await fetch(`${import.meta.env.VITE_REQUEST_PATH}auth/login`, {
             method: 'POST',
             
             headers: {

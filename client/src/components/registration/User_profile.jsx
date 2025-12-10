@@ -18,7 +18,7 @@ function User_profile({info}) {
         localStorage.removeItem('access_token');
 
         // Remove cookie
-        const response_s = await fetch('http://localhost:3000/auth/logout', {
+        const response_s = await fetch(`${import.meta.env.VITE_REQUEST_PATH}auth/logout`, {
             method: 'POST',
             
             credentials: 'include', // ✔️ include cookies in request
@@ -36,7 +36,7 @@ function User_profile({info}) {
 
         if(!answer) return;
 
-        const response_s = await fetch('http://localhost:3000/auth/delete', {
+        const response_s = await fetch(`${import.meta.env.VITE_REQUEST_PATH}auth/delete`, {
             method: 'DELETE',
             
             headers: {
@@ -67,7 +67,7 @@ function User_profile({info}) {
 
         formData.append("profileImage", file);
 
-        const response_s = await fetch('http://localhost:3000/user/update', {
+        const response_s = await fetch(`${import.meta.env.VITE_REQUEST_PATH}user/update`, {
             method: 'POST',
 
             headers: {

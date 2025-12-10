@@ -32,7 +32,7 @@ function Liked() {
     const navigate = useNavigate();
 
     const AllLiked_DB = async() => {// fetch all liked movies/shows by current User
-        const response_server = await fetch('http://localhost:3000/like/getLiked', {
+        const response_server = await fetch(`${import.meta.env.VITE_REQUEST_PATH}like/getLiked`, {
             method: 'POST',
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -160,7 +160,7 @@ function Liked() {
             return;
         }
         
-        const response_s = await fetch('http://localhost:3000/like/delete', {
+        const response_s = await fetch(`${import.meta.env.VITE_REQUEST_PATH}like/delete`, {
             method: 'DELETE',
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('access_token')}`,

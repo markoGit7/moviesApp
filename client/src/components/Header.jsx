@@ -55,18 +55,6 @@ function Header() {
         setUser(getUser);
 
     }, []);
-
-    useEffect(() => {//test useffect for refreshing the page whenever I start the server;
-      
-        (async() => {
-            await fetch('http://localhost:3000/health').then(data => {
-                if(data.ok === true) {
-                    // window.location.reload();
-                }
-            });
-        })();
-      
-    }, []);
     
 
 
@@ -80,7 +68,7 @@ function Header() {
         if(!token) return;
 
         const update = async() => {
-            const response = await fetch('http://localhost:3000/like/track',{
+            const response = await fetch(`${import.meta.env.VITE_REQUEST_PATH}like/track`,{
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('access_token')}`,
