@@ -37,30 +37,16 @@ const allowedOrigins = [
 // ✅ Allow requests from your Vite frontend
 app.use(cors({
     origin: function (origin, callback) {
-        // allow requests with no origin (like mobile apps or curl)
         if (!origin) return callback(null, true);
-
-        if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-        } else {
+        if (allowedOrigins.includes(origin)) return callback(null, true);
         return callback(new Error("Not allowed by CORS"));
-        }
     },
-
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
     exposedHeaders: ["x-new-access-token"]
 }));
 
-// Handle OPTIONS requests safely
-app.options('*', (req, res) => {
-    res.header("Access-Control-Allow-Origin", req.headers.origin);
-    res.header("Access-Control-Allow-Credentials", "true");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-    return res.sendStatus(200);
-});
 
 // Middleware for JSON
 app.use(express.json());
