@@ -33,6 +33,7 @@ const allowedOrigins = [
     process.env.FRONTEND_URL  // your deployed frontend
 ];
 
+
 // ✅ Allow requests from your Vite frontend
 app.use(cors({
     origin: function (origin, callback) {
@@ -52,6 +53,8 @@ app.use(cors({
     exposedHeaders: ["x-new-access-token"]
 }));
 
+// Allow all methods
+app.options("*", cors());
 
 // Middleware for JSON
 app.use(express.json());
