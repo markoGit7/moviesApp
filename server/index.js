@@ -58,7 +58,7 @@ app.use(express.json());
 app.post('/myQuery', async(req, res) => {
     const {query} = req.body;
     const {user_media_type} = req.body;
-    console.log('myQuery in Server/ ', query, 'my Input media type in Server/ ', user_media_type);
+    
     const results = await Find_Closest_Match(query, user_media_type);
 
     res.json(results);
@@ -70,7 +70,6 @@ app.post('/auth/signup', async(req, res) => {
     
     const newUser = await singUp(userName, email, password, confirmPassword);
 
-    console.log(newUser);
     return res.json(newUser);
 });
 
@@ -93,7 +92,6 @@ app.post('/auth/login', async(req, res) => {
     });
     
 
-    console.log("User Login from DB return: ", userLogin);
     res.json({
         access_token: userLogin.access_token, 
         status: userLogin.status, 
@@ -264,12 +262,7 @@ app.post('/comments', auth, async(req, res) => {
     const {post_id, media_type, message} = req.body;
     const user = req.user;
     
-    console.log({
-        user_id: user.id,
-        post_id: post_id,
-        media_type: media_type,
-        message: message
-    });
+ 
     const response_db = await addComent(user.id, post_id, media_type, message);
 
     res.json(response_db);
@@ -297,15 +290,6 @@ app.post('/comments/get', auth, async(req, res) => {
 app.post('/comments/replies', auth, async(req, res) => {
     const {post_id, media_type, message, comment_id} = req.body;
     const user = req.user;
-
-    console.log({
-        post_id: post_id,
-        media_type: media_type,
-        user_id: user.id,
-        message: message,
-        comment_id: comment_id
-    });
-
     
     const response_db = await addReply(user.id, post_id, media_type, message, comment_id);
 

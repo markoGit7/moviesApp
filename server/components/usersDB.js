@@ -101,7 +101,6 @@ export async function logIn(user_email, user_password) {
     
     const isMatch = await bcrypt.compare(user_password, db_password);
     
-    console.log("user password matching: ", isMatch, "my password: ", user_password, "cripted_password: ", db_password);
 
     if(isMatch === false) {
         fb.status = 401;

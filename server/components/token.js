@@ -45,18 +45,13 @@ export function verifyTokenRefresh(token) {
 
 // FUNCTION: verify if token still avaliable
 export function auth(req, res, next) {
-	const fb = {
-        message: ""
-    }
+	
     const authHeader = req.headers.authorization;
 
     const token = authHeader.split(" ")[1] === "null" ? false : authHeader.split(" ")[1];
     
     if(token === false) {
         req.user = null;
-        
-        fb.message = "Token is missing in headers, and probably in localstorage too.";
-        console.table([fb]);
         
         return next();
     }
@@ -65,9 +60,6 @@ export function auth(req, res, next) {
     
     if(accessToken_decode) {
         req.user = accessToken_decode;
-
-        fb.message = "Access_token still valid";
-        console.table([fb]);
 
         return next();
     }
@@ -89,14 +81,9 @@ export function auth(req, res, next) {
         req.user = refreshToken_decode;
         res.setHeader("x-new-access-token", newAccessToken);
 
-        fb.message = "Access token not valid, a new one was created."
-        console.table([fb]);
-
         return next();
     }
-    
-    fb.message = "No valid refresh token. User log in again";
-    console.table([fb]);
+
 
     return res.status(401).json({message:'Refresh Token Expired'});
 };
