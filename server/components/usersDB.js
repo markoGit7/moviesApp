@@ -1,5 +1,3 @@
-import {connectDB} from './dbConnect.js'
-
 // Import {hash, token}
 import bcrypt from "bcrypt";
 
@@ -9,7 +7,8 @@ import { Buffer } from "buffer";
 // Import token.js
 import {createToken, verifyToken, createRefreshToken} from './token.js' 
 
-const db = await connectDB();
+// DB connection
+import pool from './dbConnect.js';
 
 export async function singUp(user_name, user_email, user_password, confirm_password) {
 
@@ -22,7 +21,7 @@ export async function singUp(user_name, user_email, user_password, confirm_passw
 
     //if user already exists (user_name === db_username && user_email === db_userEmail)
     const userExists = async() => {
-        const [row] = await db.query('SELECT * FROM users WHERE user_name = ?',[user_name]);
+        const [row] = await pool.query('SELECT * FROM users WHERE user_name = ?',[user_name]);
         return row.length > 0;
     };
     const user = await userExists();
@@ -57,7 +56,7 @@ export async function singUp(user_name, user_email, user_password, confirm_passw
 
     //check if everything is good in the insert with try and catch
     try{
-        await db.query(query,[user_name, user_email, hashedPassword]);
+        await pool.query(query,[user_name, user_email, hashedPassword]);
 
         fb.status = 201;
         fb.message = 'New User Added';
@@ -84,7 +83,7 @@ export async function logIn(user_email, user_password) {
 
     const query = `SELECT * FROM users WHERE email = ?`;
 
-    const [row] = await db.query(query,[user_email]);
+    const [row] = await pool.query(query,[user_email]);
     
     //check if the user_email exists
     const emailExists = row.length > 0;
@@ -126,7 +125,7 @@ export async function logIn(user_email, user_password) {
 
     
     // set refresh token to db
-    await db.query(
+    await pool.query(
         "UPDATE users SET refresh_token = ? WHERE id = ?",
         [tokenRefresh, user_id]
     );
@@ -148,7 +147,7 @@ export async function DeleteUser(user_id) {
 
     try {
     
-        await db.query(query,[user_id]);
+        await pool.query(query,[user_id]);
     
     } 
     catch(error) {
@@ -163,7 +162,7 @@ export async function DeleteUser(user_id) {
 export async function userDetails(user_id) {
     const query = `SELECT * FROM users WHERE id = ?`;
     
-    const [row] = await db.query(query,[user_id]);
+    const [row] = await pool.query(query,[user_id]);
     
     const mimetype = row[0].profile_image_type;
 
@@ -177,7 +176,7 @@ export async function userDetails(user_id) {
 
 export async function userUpdates(id, user_profileImage, profile_image_type) {
 
-    const [row] = await db.query("SELECT * FROM users WHERE id = ? AND profile_image = ? AND profile_image_type = ?", [id, user_profileImage, profile_image_type]);
+    const [row] = await pool.query("SELECT * FROM users WHERE id = ? AND profile_image = ? AND profile_image_type = ?", [id, user_profileImage, profile_image_type]);
 
     if(row.length > 0) {
         return null;
@@ -187,7 +186,7 @@ export async function userUpdates(id, user_profileImage, profile_image_type) {
 
     try {
         
-        await db.query(query, [user_profileImage, profile_image_type, id]);
+        await pool.query(query, [user_profileImage, profile_image_type, id]);
     
     } catch (error) {
         return {status: 500, error: `${error}`}

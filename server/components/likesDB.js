@@ -1,13 +1,13 @@
-import {connectDB} from './dbConnect.js'
+// DB connection
+import pool from './dbConnect.js';
 
-const db = await connectDB();
 
 // FUNCTION: verify if post(movie/show) is already liked
 export async function checkLiked(user_id, post_id, media_type) {
 
     const query = `SELECT * FROM liked_post WHERE user_id = ? AND post_id = ? AND media_type = ?`;
 
-    const [row] = await db.query(query, [user_id, post_id, media_type]);
+    const [row] = await pool.query(query, [user_id, post_id, media_type]);
 
 
     if(row.length > 0) return true;
@@ -20,12 +20,12 @@ export async function Like(user_id, post_id, media_type) {
 
     const query = `SELECT * FROM liked_post WHERE user_id = ? AND post_id = ? AND media_type = ?`;
 
-    const [row] = await db.query(query, [user_id, post_id, media_type]);
+    const [row] = await pool.query(query, [user_id, post_id, media_type]);
 
 
     if(row.length > 0) {
         //unlike
-        await db.query(
+        await pool.query(
             `DELETE FROM liked_post 
             WHERE user_id = ? AND post_id = ? AND media_type = ?`,
             [user_id, post_id, media_type]
@@ -37,7 +37,7 @@ export async function Like(user_id, post_id, media_type) {
 
     //insert new record
     try{
-        await db.query(
+        await pool.query(
             `INSERT INTO liked_post (user_id, post_id, media_type)
             VALUES (?, ?, ?)`,
             [user_id, post_id, media_type]
@@ -57,7 +57,7 @@ export async function likesCountTrack(user_id) {
 
     const query = `SELECT COUNT(*) AS 'notSeen' FROM liked_post WHERE user_id = ? AND seen = false`;
 
-    const [rows] = await db.query(query, [user_id]);
+    const [rows] = await pool.query(query, [user_id]);
 
     return rows;
 };
@@ -68,7 +68,7 @@ export async function everyLiked(user_id) {
 
     const query = `SELECT * FROM liked_post WHERE user_id = ?`;
 
-    const [rows] = await db.query(query, [user_id]);
+    const [rows] = await pool.query(query, [user_id]);
 
 
     if(rows.length < 1) {
@@ -76,7 +76,7 @@ export async function everyLiked(user_id) {
     }
 
     // make unseen to 0 in the header heart
-    await db.query(
+    await pool.query(
         "UPDATE liked_post SET seen = TRUE WHERE user_id = ?",
         [user_id]
     );
@@ -103,7 +103,7 @@ export async function DeleteLiked(user_id, arr) {
        
         try {
 
-            await db.query(query,[user_id, col.post_id, col.media_type]);
+            await pool.query(query,[user_id, col.post_id, col.media_type]);
 
         } 
         catch(error) {

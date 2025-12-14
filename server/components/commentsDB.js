@@ -1,9 +1,8 @@
-import {connectDB} from './dbConnect.js'
-
 // Buffer
 import { Buffer } from "buffer";
 
-const db = await connectDB();
+// DB connection
+import pool from './dbConnect.js';
 
 //FUNCTION: add new comment to DB
 export async function addComent(user_id, post_id, media_type, message) {
@@ -14,7 +13,7 @@ export async function addComent(user_id, post_id, media_type, message) {
     }
 
     try {
-        await db.query(
+        await pool.query(
             `INSERT INTO comments (user_id, post_id, media_type, message)
             VALUES (?, ?, ?, ?)`,
             [user_id, post_id, media_type, message]
@@ -43,7 +42,7 @@ export async function addReply(user_id, post_id, media_type, message, replyOn_id
     }
 
     try {
-        await db.query(
+        await pool.query(
             `INSERT INTO comments (user_id, post_id, media_type, message, parent_id)
             VALUES (?, ?, ?, ?, ?)`,
             [user_id, post_id, media_type, message, replyOn_id]
@@ -73,10 +72,10 @@ export async function addReaction(user_id, post_id, media_type, comment_id, auth
     }
 
     //convert author(user_name) to id from users table
-    const [[author_id]] = await db.query('SELECT id FROM users WHERE user_name = ?', [author]); 
+    const [[author_id]] = await pool.query('SELECT id FROM users WHERE user_name = ?', [author]); 
 
     // Select to see if I have already reacted on the comment I've currently clicked on
-    const [[r]] = await db.query('SELECT reaction FROM comments_reactions WHERE user_id = ? AND post_id = ? AND media_type = ? AND comment_id = ? AND author_id = ?', [user_id, post_id, media_type, comment_id, author_id.id]);
+    const [[r]] = await pool.query('SELECT reaction FROM comments_reactions WHERE user_id = ? AND post_id = ? AND media_type = ? AND comment_id = ? AND author_id = ?', [user_id, post_id, media_type, comment_id, author_id.id]);
 
 
     //Set variable, reacted = [{reaction}] from select || null
@@ -89,7 +88,7 @@ export async function addReaction(user_id, post_id, media_type, comment_id, auth
         if(reaction === reacted){
             // delete row
 
-            await db.query('DELETE FROM comments_reactions WHERE user_id = ? AND post_id = ? AND media_type = ? AND comment_id = ? AND author_id = ? AND reaction = ?', [user_id, post_id, media_type, comment_id, author_id.id, reacted]);
+            await pool.query('DELETE FROM comments_reactions WHERE user_id = ? AND post_id = ? AND media_type = ? AND comment_id = ? AND author_id = ? AND reaction = ?', [user_id, post_id, media_type, comment_id, author_id.id, reacted]);
 
             fb.action = `Deleting a row from comments_reactions because of double click on Comment: ${comment_id}, duble clicked on: ${reaction === 'like' ? 'Like' : 'Dislike'}`;
             fb.status = 204;
@@ -99,7 +98,7 @@ export async function addReaction(user_id, post_id, media_type, comment_id, auth
         } 
 
         //update reaction in DB with new value
-        await db.query('UPDATE comments_reactions SET reaction = ? WHERE user_id = ? AND post_id = ? AND media_type = ? AND comment_id = ? AND author_id = ? AND reaction = ?', [reaction, user_id, post_id, media_type, comment_id, author_id.id, reacted]);
+        await pool.query('UPDATE comments_reactions SET reaction = ? WHERE user_id = ? AND post_id = ? AND media_type = ? AND comment_id = ? AND author_id = ? AND reaction = ?', [reaction, user_id, post_id, media_type, comment_id, author_id.id, reacted]);
 
 
         fb.action = `Updating the row from comments_reactions, reaction to: ${reaction} on commentNO: ${comment_id}`;
@@ -112,7 +111,7 @@ export async function addReaction(user_id, post_id, media_type, comment_id, auth
     
     //If no reacted was found then Insert a new value in the table with the reaction and the other values I have send here.
     try {
-        await db.query(
+        await pool.query(
             `INSERT INTO comments_reactions (user_id, post_id, media_type, comment_id, author_id, reaction)
             VALUES (?, ?, ?, ?, ?, ?)`,
             [user_id, post_id, media_type, comment_id, author_id.id, reaction]
@@ -169,7 +168,7 @@ export async function getComments(user, post_id, media_type) {
     GROUP BY c.id
     ORDER BY upload_date DESC`;
 
-    const [rows] = await db.query(query, [user?.id, post_id, media_type]);
+    const [rows] = await pool.query(query, [user?.id, post_id, media_type]);
 
 
     // Convert to Base64 usable Image
@@ -197,7 +196,7 @@ export async function getComments(user, post_id, media_type) {
 
 //FUNCTION: delete a comment
 async function getAllChildComments(parentId) {
-    const [children] = await db.query(
+    const [children] = await pool.query(
         'SELECT id FROM comments WHERE parent_id = ?',
         [parentId]
     );
@@ -220,7 +219,7 @@ export async function deleteComment(user_id, post_id, media_type, comment_id) {
     };
 
     // Check if the comment exists AND belongs to the user
-    const [rows] = await db.query(
+    const [rows] = await pool.query(
         `SELECT * FROM comments WHERE user_id = ? AND post_id = ? AND media_type = ? AND id = ?`,
         [user_id, post_id, media_type, comment_id]
     );
@@ -238,13 +237,13 @@ export async function deleteComment(user_id, post_id, media_type, comment_id) {
     const deleteIds = [comment_id, ...nestedIds];
 
     // 3. Delete reactions first (FK constraint)
-    await db.query(
+    await pool.query(
         `DELETE FROM comments_reactions WHERE comment_id IN (?)`,
         [deleteIds]
     );
 
     // 4. Delete the comments
-    await db.query(
+    await pool.query(
         `DELETE FROM comments WHERE id IN (?)`,
         [deleteIds]
     );

@@ -1,7 +1,9 @@
 // Import dependencies
-import { connectDB } from './dbConnect.js';
 import { getEmbedder } from './embedder.js';
 import "dotenv/config";
+
+// DB connection
+import pool from './dbConnect.js';
 
 //import 
 import fs from 'fs';
@@ -9,12 +11,6 @@ import path from 'path';
 
 const API_KEY = process.env.API_KEY;
 
-// --- DB connection ---
-let db;
-(async () => {
-    db = await connectDB();
-    console.log("✅ Connected to MySQL database");
-})();
 
 
 const normalize = (t) => (t || "").trim().replace(/\\n/g, " ").replace(/\s+/g, " ").replace(/\\'/g, "'").replace(/\\"/g, '"');
@@ -27,7 +23,7 @@ export async function Content_Migration(type = "movie") {
 
     // --- Helper: Check if record exists ---
     async function recordExists(id, media_type) {
-        const [rows] = await db.query(
+        const [rows] = await pool.query(
             `SELECT id FROM fetched WHERE id = ? AND media_type = ?`,
             [id, media_type]
         );
@@ -36,7 +32,7 @@ export async function Content_Migration(type = "movie") {
 
     // --- Helper: Detect changed overview ---
     async function detectChangedOverview(id, media_type, apiOverview) {
-        const [rows] = await db.query(
+        const [rows] = await pool.query(
             `SELECT overview FROM fetched WHERE id = ? AND media_type = ?`,
             [id, media_type]
         );
@@ -156,7 +152,7 @@ export async function Content_Migration(type = "movie") {
             `;
 
             try {
-                await db.query(query, [
+                await pool.query(query, [
                     id,
                     media_type,
                     title,
@@ -195,7 +191,7 @@ export async function Content_Migration(type = "movie") {
 
 export async function updateDB() {
     // OBJECT: get all the records from DB into rows
-    const [rows] = await db.query(`SELECT * FROM fetched`);
+    const [rows] = await pool.query(`SELECT * FROM fetched`);
     const log = [];
     let index = 1;
     console.log('fetching all db stores....');
@@ -281,7 +277,7 @@ export async function updateDB() {
         `;
 
         try{
-            await db.query(query, [
+            await pool.query(query, [
                 api_title,
                 api_overview,
                 api_release_date,
@@ -309,10 +305,10 @@ export async function updateDB() {
 export async function SELECT_EVERYTHING(type) {
     let rows = [];
     if(type === 'movie' || type === 'tv') {
-        const [results] = await db.query("SELECT * FROM fetched WHERE media_type = ?",[type]);
+        const [results] = await pool.query("SELECT * FROM fetched WHERE media_type = ?",[type]);
         rows = results;
     } else {
-        const [results] = await db.query(`SELECT * FROM fetched`);
+        const [results] = await pool.query(`SELECT * FROM fetched`);
         rows = results;
     } 
     
