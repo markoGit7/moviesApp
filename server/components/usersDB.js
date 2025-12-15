@@ -166,6 +166,11 @@ export async function userDetails(user_id) {
     
     const mimetype = row[0].profile_image_type;
 
+    // If the user doesn't have profile image
+    if(!mimetype) {
+        return row[0];
+    }
+    
     const imageBase64 = `data:${mimetype};base64,${row[0].profile_image.toString('base64')}`;
     
     // update user with usable profile_image
