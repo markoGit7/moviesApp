@@ -46,16 +46,6 @@ function Sing_form() {
         }
 
 
-        console.log('Sing Up Form Submitted');
-        console.table({
-            aplication:'Singn up',
-            username: userName,
-            email: email,
-            password: password,
-            confirmPassword: confirmPassword
-        },['username','email', 'password', 'confirmPassword']);
-
-
         const response = await fetch(`${import.meta.env.VITE_REQUEST_PATH}auth/signup`, {
             method: 'POST',
             headers: {

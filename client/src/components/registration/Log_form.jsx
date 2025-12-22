@@ -13,13 +13,6 @@ function Log_form() {
     const handleSubmit = async(e) => {
         e.preventDefault();
 
-        console.log('Log In Form Submitted');
-        console.table({
-            aplication:'Log in',
-            email: email,
-            password: password
-        },['email', 'password']);
-
 
         const response = await fetch(`${import.meta.env.VITE_REQUEST_PATH}auth/login`, {
             method: 'POST',

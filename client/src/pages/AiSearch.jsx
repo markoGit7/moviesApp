@@ -65,18 +65,18 @@ function AiSearch() {
         setResults(null);
         setLoading(true);
 
+        // Predefind media type
         const myQueryMediaType  = (['tv', 'movie', 'show', 'cartoon'].find(word => query.toLowerCase().includes(word))) 
         const two_types = myQueryMediaType && (myQueryMediaType === "movie" || myQueryMediaType === "movies" ? 'movie' : 'tv');
-        console.log('Type I search for: ', two_types);
+        
 
         if(query.trim() === "") {
-            console.log('The Query Cant be empty');
+            alert('The Query Cant be empty');
             setLoading(null);
             return; 
         }
 
-        console.log('Searching movie/show that contains... ', {description: query});
-        const start = performance.now();
+        //Request for backend 
         const response = await fetch(`${import.meta.env.VITE_REQUEST_PATH}myQuery`, {
             method: 'POST',
             headers: {
@@ -88,11 +88,10 @@ function AiSearch() {
             }),
         })
 
+        // Fetched data 
         const data_from_server = await response.json();
         const popularity_based_data = data_from_server.sort((a, b) => b.popularity - a.popularity);
-        const end = performance.now();
-        console.log("Loading time: ", end - start, "ms");
-        console.log('JSON File From myQuery ', data_from_server);
+
         setLoading(false);
         setResults(popularity_based_data || null);
     }

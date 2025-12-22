@@ -240,12 +240,7 @@ function AdvancedSearch() {
     useEffect(() => {//dedecting input changes 
 
         if(genersLoading) return;
-        
-        console.log({
-            action:'Important',
-            type:`${storageParse?.media_type} === ${type}`,
-            page: page,
-        })
+   
         
         const toPageOne = (
             storageParse?.query !== title || storageParse?.media_type !== type || 
