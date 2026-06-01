@@ -142,31 +142,34 @@ export async function getComments(user, post_id, media_type) {
     }
 
     const query = `
-    SELECT 
+        SELECT
         c.id,
-        ANY_VALUE(c.message) AS message,
-        ANY_VALUE(c.upload_date) AS upload_date,
-        ANY_VALUE(u.user_name) AS user_name,
-        ANY_VALUE(c.parent_id) AS parent_id,
-        ANY_VALUE(u.profile_image) AS profile_image,
-        ANY_VALUE(u.profile_image_type) AS profile_image_type,
-        
+        c.message,
+        c.upload_date,
+        u.user_name,
+        c.parent_id,
+        u.profile_image,
+        u.profile_image_type,
+
         SUM(CASE WHEN cr.reaction = 'like' THEN 1 ELSE 0 END) AS total_likes,
         SUM(CASE WHEN cr.reaction = 'dislike' THEN 1 ELSE 0 END) AS total_dislikes,
 
         MAX(CASE WHEN cr.user_id = ? THEN cr.reaction ELSE NULL END) AS my_reaction
 
-    FROM comments c
-    LEFT JOIN users u ON c.user_id = u.id
-    LEFT JOIN comments_reactions cr ON cr.comment_id = c.id
-        AND cr.post_id = c.post_id
-        AND cr.media_type = c.media_type
+        FROM comments c
+        LEFT JOIN users u ON c.user_id = u.id
+        LEFT JOIN comments_reactions cr ON cr.comment_id = c.id
+            AND cr.post_id = c.post_id
+            AND cr.media_type = c.media_type
 
-    WHERE c.post_id = ?
-    AND c.media_type = ?
+        WHERE c.post_id = ?
+        AND c.media_type = ?
 
-    GROUP BY c.id
-    ORDER BY upload_date DESC`;
+        GROUP BY c.id
+        ORDER BY c.upload_date DESC
+    `;
+
+    
 
     const [rows] = await pool.query(query, [user?.id, post_id, media_type]);
 
