@@ -104,7 +104,7 @@ function MovieDetails() {
 
     const movieDirector = () => {//Function for finding the movie director
         if(!movie?.credits?.crew) return 'Unknown Director';
-        const Director = movie.credits.crew.find(row => row.known_for_department === 'Directing') || 'Unknown Director';
+        const Director = movie.credits.crew.find(row => row.known_for_department === 'Directing') || 'Unknown Director'; //HERE MAYBE I SHOULD USE FILTER INSTEAD OF FIND
         return Director.name;
     } 
     
