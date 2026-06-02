@@ -68,80 +68,115 @@ function HeroSection() {
     const content = activeTab === 'movies' ? todayMovies : todayShows
     
     return (
-        <section className='w-full h-auto relative py-5'>
-            <div className='w-[1200px] max-w-full px-5 mx-auto'>
+        <section className="w-full h-auto relative py-5">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
                 {/* Navigators */}
-                <div className="flex gap-x-5 justify-center mb-7">
-                    <button className={`p-2 transition-colors min-h-11 rounded-lg cursor-pointer min-w-30 ${activeTab === 'movies' ? 'bg-red-500 font-semibold' : 'bg-white/50 font-normal'}`} onClick={() => handleTabs('movies')}>Movies</button>
-                    <button className={`p-2 transition-colors min-h-11  rounded-lg cursor-pointer min-w-30 ${activeTab === 'shows' ? 'bg-red-500 font-semibold' : 'bg-white/50 font-normal'}`} onClick={() => handleTabs('shows')}>Shows</button>
+                <div className="flex flex-wrap gap-3 justify-center mb-7">
+                    <button
+                        className={`p-2 transition-colors min-h-11 rounded-lg cursor-pointer min-w-[120px] ${
+                            activeTab === "movies"
+                                ? "bg-red-500 font-semibold"
+                                : "bg-white/50 font-normal"
+                        }`}
+                        onClick={() => handleTabs("movies")}
+                    >
+                        Movies
+                    </button>
+
+                    <button
+                        className={`p-2 transition-colors min-h-11 rounded-lg cursor-pointer min-w-[120px] ${
+                            activeTab === "shows"
+                                ? "bg-red-500 font-semibold"
+                                : "bg-white/50 font-normal"
+                        }`}
+                        onClick={() => handleTabs("shows")}
+                    >
+                        Shows
+                    </button>
                 </div>
 
-                {/* Animated Cards */}
-                <div className="flex justify-center -mx-3">
+                {/* Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     <AnimatePresence mode="wait">
                         {content &&
-                        content.map((row, index) => (
-                            <motion.div
-                                key={row.id + activeTab}
-                                initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                                animate={{
-                                    opacity: 1,
-                                    y: 0,
-                                    scale: index === 1 ? 1 : 0.85,
-                                    flexBasis: index === 1 ? "40%" : "30%",
-                                }}
-                                exit={{ opacity: 0, y: -20, scale: 0.9 }}
-                                transition={{ duration: 0.4, ease: "easeInOut" }}
-                                className="px-3"
-                            >
+                            content.map((row, index) => (
+                                <motion.div
+                                    key={row.id + activeTab}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -20 }}
+                                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                                    className={`
+                                        w-full
+                                        ${
+                                            index === 1
+                                                ? "lg:scale-105"
+                                                : "lg:scale-95"
+                                        }
+                                    `}
+                                >
+                                    <div className="w-full relative overflow-hidden">
 
-                                <div className='w-full relative overflow-hidden'>
-
-                                    <div className='relative cursor-pointer' onClick={() => handleNavigation((row.title || row.name), row.id)}>
-                                        {/* Image */}
-                                        <img
-                                            src={`${IMAGE_PATH}${row.poster_path}`}
-                                            alt=""
-                                            className="rounded-lg shadow-lg object-cover "
-                                        />
-
-                                        {/* Released Today Badge */}
-                                        <div className="absolute top-2 left-0 bg-red-600 text-xs font-semibold px-2 py-1 rounded-tr-md rounded-br-md shadow-md">
-                                            Released Today
-                                        </div>
-
-                                        {/* Overlay on hover */}
-                                        <div className="absolute inset-0 bg-black/0 hover:bg-black/40 transition-all rounded-lg flex items-center justify-center opacity-0 hover:opacity-100">
-                                            <span className="text-sm font-semibold">View Details</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Deatils */}
-                                    <div>
-
-                                        <p className="text-gray-400 text-xs">
-                                            {row.genre_ids
-                                                .slice(0, 3)
-                                                .map(id => genres[id])
-                                                .filter(Boolean)
-                                                .join(" • ")
+                                        <div
+                                            className="relative cursor-pointer group"
+                                            onClick={() =>
+                                                handleNavigation(
+                                                    (row.title || row.name),
+                                                    row.id
+                                                )
                                             }
-                                        </p>
+                                        >
+                                            {/* Image */}
+                                            <img
+                                                src={`${IMAGE_PATH}${row.poster_path}`}
+                                                alt={row.title || row.name}
+                                                className="
+                                                    w-full
+                                                    rounded-lg
+                                                    shadow-lg
+                                                    object-cover
+                                                    aspect-[2/3]
+                                                "
+                                            />
 
-                                        <h2 className='text-lg'>{row.title || row.name}</h2>
-                                        
+                                            {/* Released Today Badge */}
+                                            <div className="absolute top-2 left-0 bg-red-600 text-xs font-semibold px-2 py-1 rounded-tr-md rounded-br-md shadow-md">
+                                                Released Today
+                                            </div>
+
+                                            {/* Overlay */}
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
+                                                <span className="text-sm font-semibold">
+                                                    View Details
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Details */}
+                                        <div className="pt-3">
+                                            <p className="text-gray-400 text-xs sm:text-sm">
+                                                {row.genre_ids
+                                                    .slice(0, 3)
+                                                    .map(id => genres[id])
+                                                    .filter(Boolean)
+                                                    .join(" • ")}
+                                            </p>
+
+                                            <h2 className="text-base sm:text-lg font-semibold mt-1">
+                                                {row.title || row.name}
+                                            </h2>
+                                        </div>
+
                                     </div>
-
-
-                                </div>
-
-                            </motion.div>
-                        ))}
+                                </motion.div>
+                            ))}
                     </AnimatePresence>
                 </div>
+
             </div>
         </section>
-    )
+    );
 }
 
 export default HeroSection

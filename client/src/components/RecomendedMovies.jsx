@@ -74,35 +74,77 @@ function RecomendedMovies({movie_id}) {
     
     return (
         <section className='w-full relative py-5'>
-            <div className='w-[1200px] max-w-full px-5 mx-auto'>
-                <h2 className='text-2xl mb-5 ml-[25px]'>Recommended</h2>
-                <div className='w-full h-auto relative px-[25px]'>
+            <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+
+                <h2 className='text-lg sm:text-xl md:text-2xl mb-4 sm:mb-5'>
+                    Recommended
+                </h2>
+
+                <div className='w-full relative px-2 sm:px-4 lg:px-6'>
+
                     {/* Custom arrows */}
-                    <FontAwesomeIcon icon={faChevronLeft} className="custom-rec-prev absolute left-0 top-1/2 -translate-y-1/2 text-white shadow text-[25px]"></FontAwesomeIcon>
-                    <FontAwesomeIcon icon={faChevronRight} className="custom-rec-next absolute right-0 top-1/2 -translate-y-1/2 text-white shadow text-[25px]"></FontAwesomeIcon>
+                    <FontAwesomeIcon
+                        icon={faChevronLeft}
+                        className="custom-rec-prev absolute left-0 top-1/2 -translate-y-1/2 text-white shadow text-xl sm:text-2xl lg:text-[25px] z-10"
+                    />
+
+                    <FontAwesomeIcon
+                        icon={faChevronRight}
+                        className="custom-rec-next absolute right-0 top-1/2 -translate-y-1/2 text-white shadow text-xl sm:text-2xl lg:text-[25px] z-10"
+                    />
 
                     <Swiper
                         modules={[Navigation, Pagination]}
                         onSwiper={(swiper) => (swiperRef.current = swiper)}
                         navigation={{
-                        nextEl: '.custom-rec-next',
-                        prevEl: '.custom-rec-prev',
+                            nextEl: '.custom-rec-next',
+                            prevEl: '.custom-rec-prev',
                         }}
-                        
-                        spaceBetween={30}
-                        slidesPerView={4}
-                        allowTouchMove={false}
-                        className=""
+
+                        spaceBetween={16}
+                        allowTouchMove={true}
+
+                        breakpoints={{
+                            0: {
+                                slidesPerView: 1.2,
+                            },
+                            480: {
+                                slidesPerView: 2,
+                            },
+                            768: {
+                                slidesPerView: 3,
+                            },
+                            1024: {
+                                slidesPerView: 4,
+                            },
+                        }}
                     >
+
                         {
-                           movies && movies.map(row => (
-                                <SwiperSlide>
-                                    <div>
-                                        <span onClick={() => navigate(`/movie/${slugify(row.title)}`, { state: { id: row.id } })}>
-                                            <img src={`${IMAGE_PATH}${row.poster_path}`} className="w-full h-64 object-cover"/>
-                                            <h3>{row.title}</h3>
+                            movies && movies.map(row => (
+                                <SwiperSlide key={row.id}>
+                                    <div className="px-1">
+
+                                        <span
+                                            onClick={() =>
+                                                navigate(`/movie/${slugify(row.title)}`, {
+                                                    state: { id: row.id }
+                                                })
+                                            }
+                                            className="cursor-pointer block"
+                                        >
+
+                                            <img
+                                                src={`${IMAGE_PATH}${row.poster_path}`}
+                                                className="w-full aspect-[2/3] object-cover rounded-lg"
+                                            />
+
+                                            <h3 className="text-sm sm:text-base mt-2">
+                                                {row.title}
+                                            </h3>
+
                                         </span>
-                                        
+
                                         <p className="text-gray-400 text-xs">
                                             {row.genre_ids
                                                 .slice(0, 3)
@@ -111,16 +153,18 @@ function RecomendedMovies({movie_id}) {
                                                 .join(" • ")
                                             }
                                         </p>
+
                                     </div>
                                 </SwiperSlide>
                             ))
                         }
+
                     </Swiper>
 
                 </div>
             </div>
         </section>
-    )
+    );
 }
 
 export default RecomendedMovies

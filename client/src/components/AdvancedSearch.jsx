@@ -290,105 +290,267 @@ function AdvancedSearch() {
 
     return (
         <>
-            <section className='w-full  pt-5 pb-15'>
-                <div className='w-[1200px] max-w-full px-5 mx-auto '>
+            <section className='w-full pt-5 pb-15'>
+                <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+
                     {/* Controls */}
-                    <div >
-                        
-                        <div className='flex mb-5 justify-between items-center -mx-2'>
-                            <div className='flex gap-x-2 px-2'>
+                    <div>
+
+                        <div className='flex flex-col lg:flex-row gap-4 mb-5 justify-between lg:items-center'>
+
+                            <div className='flex flex-col sm:flex-row gap-3 w-full lg:w-auto'>
+
                                 {/* Back arrow */}
-                                <div className='rounded-lg border border-gray-500 p-2 grow-0 self-center'>
-                                    <FontAwesomeIcon icon={faChevronLeft} className='text-xl  text-white cursor-pointer' onClick={() => navigate('/browse')}/>
+                                <div className='rounded-lg border border-gray-500 p-2 self-start sm:self-center'>
+                                    <FontAwesomeIcon
+                                        icon={faChevronLeft}
+                                        className='text-xl text-white cursor-pointer'
+                                        onClick={() => navigate('/browse')}
+                                    />
                                 </div>
+
                                 {/* Input */}
-                                <div className='inline-block relative w-[600px] max-w-full'>
-                                    <input type='text' defaultValue={title} onKeyDown={(e) => e.key === 'Enter' ? handleInputSubmit(e.target.value) : null}  onBlur={(e) => handleInputSubmit(e.target.value)} placeholder='Search by title...' className='border-gray-500 w-full focus:border-gray-200 p-[12px_12px_12px_38px] border-1 rounded-lg outline-none text-lg'/>
-                                    <FontAwesomeIcon icon={faMagnifyingGlass} className="text-lg  absolute left-3 top-1/2 -translate-y-1/2"/>
+                                <div className='relative flex-1 lg:w-[600px] max-w-full'>
+                                    <input
+                                        type='text'
+                                        defaultValue={title}
+                                        onKeyDown={(e) =>
+                                            e.key === 'Enter'
+                                                ? handleInputSubmit(e.target.value)
+                                                : null
+                                        }
+                                        onBlur={(e) =>
+                                            handleInputSubmit(e.target.value)
+                                        }
+                                        placeholder='Search by title...'
+                                        className='border-gray-500 w-full focus:border-gray-200 p-[12px_12px_12px_38px] border rounded-lg outline-none text-base sm:text-lg'
+                                    />
+
+                                    <FontAwesomeIcon
+                                        icon={faMagnifyingGlass}
+                                        className="text-lg absolute left-3 top-1/2 -translate-y-1/2"
+                                    />
                                 </div>
+
                             </div>
 
                             {/* Pages Count */}
-                            <div className='text-lg text-gray-300 inline-block px-2'>
+                            <div className='text-sm sm:text-base lg:text-lg text-gray-300'>
                                 Total Pages: {totalPages} | Page: {page}
                             </div>
-                        </div>
-                        
-                        {/* Filter Controls */}
-                        <div class="flex space-x-4 mb-6">
 
-                            <select id="type-filter" value={type} onChange={(e) => handleTypeChange(e.target.value)}  className="w-auto  border-gray-700 text-gray-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2.5 appearance-none">
-                                <option value="multi" disabled={title === "" ? true : false}>Type: All</option>
+                        </div>
+
+                        {/* Filter Controls */}
+                        <div className="flex flex-wrap gap-3 mb-6">
+
+                            <select
+                                id="type-filter"
+                                value={type}
+                                onChange={(e) => handleTypeChange(e.target.value)}
+                                className="min-w-[140px] border-gray-700 text-gray-300 text-sm rounded-lg p-2.5 appearance-none"
+                            >
+                                <option
+                                    value="multi"
+                                    disabled={title === "" ? true : false}
+                                >
+                                    Type: All
+                                </option>
+
                                 <option value="movie">Movies</option>
                                 <option value="tv">TV Shows</option>
                             </select>
 
-                            <select id="genre-filter" value={selectedGenre || "all"} disabled={title ? true : false} onChange={(e) => set_selectedGenre(Number(e.target.value) || null)}  className={`w-48  border border-gray-700 ${title === "" ? '!text-white' : '!text-gray-500 !bg-gray-800'} text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2.5 appearance-none`}>
+                            <select
+                                id="genre-filter"
+                                value={selectedGenre || "all"}
+                                disabled={title ? true : false}
+                                onChange={(e) =>
+                                    set_selectedGenre(
+                                        Number(e.target.value) || null
+                                    )
+                                }
+                                className={`min-w-[140px] border border-gray-700 ${
+                                    title === ""
+                                        ? '!text-white'
+                                        : '!text-gray-500 !bg-gray-800'
+                                } text-sm rounded-lg p-2.5 appearance-none`}
+                            >
                                 <option value="all">Genres</option>
+
                                 {
-                                    genres && genres.map(col => (
-                                        <option value={col.id} disabled={!col[type]}>{col.name}</option>
+                                    genres &&
+                                    genres.map(col => (
+                                        <option
+                                            key={col.id}
+                                            value={col.id}
+                                            disabled={!col[type]}
+                                        >
+                                            {col.name}
+                                        </option>
                                     ))
                                 }
                             </select>
-                            
-                            <select id="year-filter" value={year || "all"} disabled={title ? true : false} onChange={(e) => setYear(Number(e.target.value) || null)} className={`w-auto  border border-gray-700 ${title === "" ? '!text-white' : '!text-gray-500 !bg-gray-800'} text-gray-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2.5 appearance-none`}>
+
+                            <select
+                                id="year-filter"
+                                value={year || "all"}
+                                disabled={title ? true : false}
+                                onChange={(e) =>
+                                    setYear(
+                                        Number(e.target.value) || null
+                                    )
+                                }
+                                className={`min-w-[140px] border border-gray-700 ${
+                                    title === ""
+                                        ? '!text-white'
+                                        : '!text-gray-500 !bg-gray-800'
+                                } text-sm rounded-lg p-2.5 appearance-none`}
+                            >
                                 <option value="all">Year: All</option>
+
                                 {
                                     generateYears().map(cell => (
-                                        <option value={cell} >{cell}</option>
+                                        <option
+                                            key={cell}
+                                            value={cell}
+                                        >
+                                            {cell}
+                                        </option>
                                     ))
                                 }
                             </select>
 
-                            <select id="language-filter" value={selectedLanguage} disabled={title ? true : false} onChange={(e) => setSelectedLanguage(e.target.value)} className={`w-auto  border border-gray-700 ${title === "" ? '!text-white' : '!text-gray-500 !bg-gray-800'} text-gray-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 p-2.5 appearance-none`}>
+                            <select
+                                id="language-filter"
+                                value={selectedLanguage}
+                                disabled={title ? true : false}
+                                onChange={(e) =>
+                                    setSelectedLanguage(e.target.value)
+                                }
+                                className={`min-w-[140px] border border-gray-700 ${
+                                    title === ""
+                                        ? '!text-white'
+                                        : '!text-gray-500 !bg-gray-800'
+                                } text-sm rounded-lg p-2.5 appearance-none`}
+                            >
                                 {
-                                    languages && languages.map(cell => (
-                                        <option value={cell.iso_639_1} >{cell.english_name}</option>
+                                    languages &&
+                                    languages.map(cell => (
+                                        <option
+                                            key={cell.iso_639_1}
+                                            value={cell.iso_639_1}
+                                        >
+                                            {cell.english_name}
+                                        </option>
                                     ))
                                 }
                             </select>
+
                         </div>
                     </div>
-                    
+
                     {/* Content */}
                     {
-                        isLoading  ?
+                        isLoading ?
 
-                        (<SceletonLoading contnetAmount={skeletonsAmount} loading={isLoading}/>)
-                        :
-                        (<ContentDisplay array={item} type={type}/>)
-                    
+                            (
+                                <SceletonLoading
+                                    contnetAmount={skeletonsAmount}
+                                    loading={isLoading}
+                                />
+                            )
+                            :
+                            (
+                                <ContentDisplay
+                                    array={item}
+                                    type={type}
+                                />
+                            )
                     }
-                
+
                 </div>
-                
             </section>
-            
-            {/* Pagination  */}
-            <div className='p-[30px_0px_15px] text-center fixed bottom-0 left-0 w-full'>
-                <div className='bg-gray-800 inline-block p-[5px_10px_5px_10px] rounded-full  drop-shadow-sm drop-shadow-black/70 '>
-                    <div className='flex -mx-[5px] gap-x-[5px]'> 
-                        <div className={`${page === 1 ? 'bg-gray-400 pointer-events-none cursor-default text-white/70' : 'bg-gray-500 pointer-events-auto cursor-pointer text-white'} px-[5px] rounded-l-full inline-flex justify-center items-center rounded-tr-lg rounded-br-lg`} onClick={() => setPage(prev => prev - 1 || 1)}>
-                            <span className="inline-block mr-1">&lt;</span> Prev
-                        </div>
 
+            {/* Pagination */}
+            <div className="fixed bottom-0 left-0 w-full p-3 flex justify-center">
+                <div className="bg-gray-800 rounded-full shadow-lg max-w-full">
+
+                    <div className="flex items-center gap-1 overflow-x-auto px-3 py-2 scrollbar-hide">
+
+                        {/* Prev */}
+                        <button
+                            className={`
+                                whitespace-nowrap
+                                px-3 py-2
+                                rounded-full
+                                text-sm
+                                ${
+                                    page === 1
+                                        ? "bg-gray-400 text-white/70 cursor-default"
+                                        : "bg-gray-500 cursor-pointer"
+                                }
+                            `}
+                            onClick={() => setPage(prev => prev - 1 || 1)}
+                        >
+                            &lt; Prev
+                        </button>
+
+                        {/* Page Numbers */}
                         {
-                        totalPages  && 
-
+                            totalPages &&
                             pagination.map(numb => (
-                                <span className={`rounded-lg min-w-9 min-h-9 p-1 cursor-pointer text-base inline-flex justify-center items-center ${page === numb ? 'bg-red-500' : 'bg-gray-500'}`} onClick={() => setPage(numb)}>{numb}</span>
+                                <button
+                                    key={numb}
+                                    className={`
+                                        min-w-9
+                                        h-9
+                                        rounded-full
+                                        text-sm
+                                        cursor-pointer
+                                        ${
+                                            page === numb
+                                                ? "bg-red-500"
+                                                : "bg-gray-500"
+                                        }
+                                    `}
+                                    onClick={() => setPage(numb)}
+                                >
+                                    {numb}
+                                </button>
                             ))
-
                         }
-                        <div className={`${page === totalPages ? 'bg-gray-400 pointer-events-none cursor-default text-white/70' : 'bg-gray-500 pointer-events-auto cursor-pointer text-white' } px-[5px] rounded-r-full inline-flex justify-center items-center rounded-l-lg`} onClick={() => setPage(prev => prev + 1 < totalPages ? prev + 1 : totalPages)}>
-                            Next <span className="inline-block ml-1">&gt;</span>
-                        </div>
+
+                        {/* Next */}
+                        <button
+                            className={`
+                                whitespace-nowrap
+                                px-3 py-2
+                                rounded-full
+                                text-sm
+                                ${
+                                    page === totalPages
+                                        ? "bg-gray-400 text-white/70 cursor-default"
+                                        : "bg-gray-500 cursor-pointer"
+                                }
+                            `}
+                            onClick={() =>
+                                setPage(prev =>
+                                    prev + 1 < totalPages
+                                        ? prev + 1
+                                        : totalPages
+                                )
+                            }
+                        >
+                            Next &gt;
+                        </button>
+
                     </div>
+
                 </div>
             </div>
         </>
-    )
+    );
 }
 
 export default AdvancedSearch

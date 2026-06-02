@@ -244,138 +244,196 @@ function MovieDetails() {
     return (
        <>
             <Header />
-            <section className='w-full relative py-5'>
-                <div className='w-[1200px] max-w-full px-5 mx-auto'>
-                    <h1 className="text-4xl">{movie.title}</h1>
-                    <span className="text-sm italic">{formatDate(movie.release_date)} • {movie.runtime}min</span>
 
-                    {/* 3 Rows */}
-                    <div className="grid  grid-cols-12 -mx-1">
-                        {/* Poster */}
-                        <div className="col-span-3 px-1">
-                            <img src={`${IMAGE_PATH}${movie.poster_path}`} className="w-full h-[400px] object-cover object-center rounded-lg"/>
+            {/* HERO */}
+            <section className='w-full relative py-5'>
+                <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl">
+                        {movie.title}
+                    </h1>
+
+                    <span className="text-xs sm:text-sm italic">
+                        {formatDate(movie.release_date)} • {movie.runtime}min
+                    </span>
+
+                    {/* MAIN GRID */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mt-4">
+
+                        {/* POSTER */}
+                        <div className="lg:col-span-3">
+                            <img
+                                src={`${IMAGE_PATH}${movie.poster_path}`}
+                                className="w-full aspect-[2/3] object-cover object-center rounded-lg"
+                            />
                         </div>
-                        {/* Video */}
-                        <div className="col-span-6 px-1">
+
+                        {/* TRAILER */}
+                        <div className="lg:col-span-6 aspect-video">
                             {trailerKey ? (
                                 <iframe
                                     width="100%"
                                     height="100%"
                                     src={`https://www.youtube.com/embed/${trailerKey}?mute=1&controls=1`}
                                     title="Movie Trailer"
-                                    className="w-full h-full border-0"
+                                    className="w-full h-full border-0 rounded-lg"
                                     allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                ></iframe>
+                                />
                             ) : (
-                                <div className="text-white bg-gray-500 h-full rounded-lg flex items-center justify-center">No trailer available.</div>
+                                <div className="text-white bg-gray-500 h-full rounded-lg flex items-center justify-center">
+                                    No trailer available.
+                                </div>
                             )}
                         </div>
-                        {/* Phosts/Videos */}
-                        <div className="col-span-3 px-1">
-                            {/* Videos Collection */}
-                            <div className="h-[50%] p-2 rounded-lg overflow-hidden">
-                                <div className="w-full h-full bg-gray-400 flex justify-center cursor-pointer items-center rounded-lg flex-col" onClick={() => handleZoomedContent('videos')}>
-                                    <FontAwesomeIcon icon={faPlay} className="text-4xl"/>
-                                    <div className="block">{movie.videos.results.length} Videos</div>
+
+                        {/* MEDIA BOXES */}
+                        <div className="lg:col-span-3 grid grid-cols-2 lg:grid-cols-1 gap-3">
+
+                            <div className="p-2 rounded-lg min-h-[140px]">
+                                <div
+                                    className="w-full h-full bg-gray-400 flex justify-center cursor-pointer items-center rounded-lg flex-col"
+                                    onClick={() => handleZoomedContent('videos')}
+                                >
+                                    <FontAwesomeIcon icon={faPlay} className="text-3xl sm:text-4xl" />
+                                    <div>{movie.videos.results.length} Videos</div>
                                 </div>
                             </div>
-                            {/* Photos Collection */}
-                            <div className="h-[50%] p-2 rounded-lg overflow-hidden">
-                                <div className="w-full h-full bg-gray-400 flex justify-center cursor-pointer items-center rounded-lg flex-col" onClick={() => handleZoomedContent('photos')}>
-                                    <FontAwesomeIcon icon={faImages } className="text-4xl"/>
-                                    <div className="block">{movie.images.posters.length} Photos</div>
+
+                            <div className="p-2 rounded-lg min-h-[140px]">
+                                <div
+                                    className="w-full h-full bg-gray-400 flex justify-center cursor-pointer items-center rounded-lg flex-col"
+                                    onClick={() => handleZoomedContent('photos')}
+                                >
+                                    <FontAwesomeIcon icon={faImages} className="text-3xl sm:text-4xl" />
+                                    <div>{movie.images.posters.length} Photos</div>
                                 </div>
                             </div>
+
                         </div>
+
                     </div>
                 </div>
             </section>
-            
+
+            {/* DETAILS */}
             <section className='w-full relative py-5'>
-                <div className='w-[1200px] max-w-full px-5 mx-auto'>
-                    <ul className="flex items-center -mx-2">
-                        {
-                            movie.genres.map(row => (
-                                <li className="after:content-['•'] after:absolute relative after:right-0 after:top-1/2 after:-translate-y-1/2 pr-3 last:pr-2 last:after:content-none px-2">{row.name}</li>
-                            ))
-                        }
+                <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+
+                    <ul className="flex flex-wrap gap-2">
+                        {movie.genres.map(row => (
+                            <li key={row.id}>
+                                {row.name}
+                            </li>
+                        ))}
                     </ul>
 
-                    <div className="grid grid-cols-12 -mx-3">
-                        <div className="col-span-8 px-3">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-4">
+
+                        {/* LEFT */}
+                        <div className="lg:col-span-8">
+
                             <p>{movie.overview}</p>
-                            <p>Director <span className="text-red-500">{movieDirector()}</span></p>
+
+                            <p>
+                                Director <span className="text-red-500">{movieDirector()}</span>
+                            </p>
+
                             <h3>Ratings</h3>
-                            <div className="flex flex-row items-center gap-x-2">
-                                <FontAwesomeIcon icon={faStar} className="text-2xl text-yellow-400"/>
+
+                            <div className="flex items-center gap-x-2">
+                                <FontAwesomeIcon icon={faStar} className="text-2xl text-yellow-400" />
                                 <div>
-                                    {/* Ratings */}
-                                    <p className="font-semibold text-lg">{movie.vote_average.toFixed(1)} <span className="text-white/80 text-base">/ 10</span></p>
-                                    {/* Votes */}
-                                    <p className="text-sm text-white/80">{JSON.stringify(movie.vote_count)}</p>
+                                    <p className="font-semibold text-lg">
+                                        {movie.vote_average.toFixed(1)} / 10
+                                    </p>
+                                    <p className="text-sm text-white/80">
+                                        {movie.vote_count}
+                                    </p>
                                 </div>
                             </div>
+
                         </div>
-                        <div className="col-span-4 px-3 justify-self-center">
-                            <button onClick={() => LINK && window.open(LINK, '_blank')} className={`${LINK ? 'bg-red-500 cursor-pointer' : 'bg-red-300 cursor-default pointer-events-none'} min-w-32 p-[12px_4px] rounded-lg`}>Watch</button>
+
+                        {/* RIGHT */}
+                        <div className="lg:col-span-4 flex flex-col items-center lg:items-start">
+
+                            <button
+                                onClick={() => LINK && window.open(LINK, '_blank')}
+                                className={`${LINK ? 'bg-red-500 cursor-pointer' : 'bg-red-300 cursor-default pointer-events-none'} min-w-32 p-3 rounded-lg w-full`}
+                            >
+                                Watch
+                            </button>
 
                             <div className="flex gap-x-5 mt-4">
-                                <FontAwesomeIcon onClick={handleLike} icon={faHeart} className={`text-2xl cursor-pointer ${Like ? 'text-red-500' : 'text-white'} `}/>
-                                
-                                <FontAwesomeIcon 
-                                    onClick={() => {
+                                <FontAwesomeIcon
+                                    onClick={handleLike}
+                                    icon={faHeart}
+                                    className={`text-2xl cursor-pointer ${Like ? 'text-red-500' : 'text-white'}`}
+                                />
+
+                                <FontAwesomeIcon
+                                    onClick={() =>
                                         document.getElementById("commentsSection")?.scrollIntoView({
                                             behavior: "smooth",
                                         })
-                                    }}
-
-                                    icon={faCommentDots} 
+                                    }
+                                    icon={faCommentDots}
                                     className="text-2xl cursor-pointer"
-                                 />
+                                />
                             </div>
+
                         </div>
+
                     </div>
                 </div>
             </section>
 
+            {/* CAST */}
             <section className='w-full relative py-5'>
-                <div className='w-[1200px] max-w-full px-5 mx-auto'>
-                    <h2 className="ml-[25px] mb-5 text-xl">Cast</h2>
-                    
-                    <div className='w-full h-auto relative px-[25px]'>
-                        <FontAwesomeIcon icon={faChevronLeft} className="custom-prev-movie absolute left-0 top-1/2 -translate-y-1/2 text-white shadow text-[25px]"></FontAwesomeIcon>
-                        <FontAwesomeIcon icon={faChevronRight} className="custom-next-movie absolute right-0 top-1/2 -translate-y-1/2 text-white shadow text-[25px]"></FontAwesomeIcon>
+                <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+
+                    <h2 className="text-lg sm:text-xl mb-4">Cast</h2>
+
+                    <div className="relative px-2 sm:px-4 lg:px-6">
 
                         <Swiper
                             modules={[Navigation, Pagination]}
                             onSwiper={(swiper) => (swiperRef.current = swiper)}
                             navigation={{
-                            nextEl: '.custom-next-movie',
-                            prevEl: '.custom-prev-movie',
+                                nextEl: '.custom-next-movie',
+                                prevEl: '.custom-prev-movie',
                             }}
-                            
-                            spaceBetween={30}
-                            slidesPerView={4}
-                            allowTouchMove={false}
-                            className=""
+                            spaceBetween={20}
+                            breakpoints={{
+                                0: { slidesPerView: 2 },
+                                640: { slidesPerView: 3 },
+                                1024: { slidesPerView: 4 },
+                            }}
                         >
-                            {
-                                movie.credits.cast.map(row => (
-                                    <SwiperSlide>
-                                        <div>
-                                            {row.profile_path ? (<img src={`${IMAGE_PATH}${row.profile_path}`} alt={`${row.name}`} className="w-full h-[340px] object-center object-cover"/>) : (<img src={missing_actor} alt={`${row.name}`} className="w-full h-[340px] object-center object-cover"/>)}
-                                            <h3>{row.name}</h3>
-                                            <span className="block">{row.character}</span>
-                                        </div>
-                                    </SwiperSlide>
-                                ))
-                            }
-
+                            {movie.credits.cast.map(row => (
+                                <SwiperSlide key={row.id}>
+                                    <div>
+                                        <img
+                                            src={
+                                                row.profile_path
+                                                    ? `${IMAGE_PATH}${row.profile_path}`
+                                                    : missing_actor
+                                            }
+                                            className="aspect-[2/3] w-full object-cover rounded-lg"
+                                        />
+                                        <h3>{row.name}</h3>
+                                        <span className="text-sm text-white/70">
+                                            {row.character}
+                                        </span>
+                                    </div>
+                                </SwiperSlide>
+                            ))}
                         </Swiper>
-                    </div>
 
+                    </div>
                 </div>
             </section>
+
 
             {/* Recommendations Block */}
             <RecomendedMovies movie_id={movieId} />

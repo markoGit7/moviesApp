@@ -303,198 +303,261 @@ function ShowsDetails() {
     return (
        <>
             <Header />
-            <section className='w-full relative py-5'>
-                <div className='w-[1200px] max-w-full px-5 mx-auto'>
-                    <h1 className="text-4xl">{show.name}</h1>
-                    <span className="text-sm italic">TV • {Released_Ended(show.first_air_date, show.last_air_date)} • {show.episode_run_time[0] || 0}min</span>
 
-                    {/* 3 Rows */}
-                    <div className="grid  grid-cols-12 -mx-1">
-                        {/* Poster */}
-                        <div className="col-span-3 px-1">
-                            <img src={`${IMAGE_PATH}${show.poster_path}`} className="w-full h-[400px] object-cover object-center rounded-lg"/>
+            {/* HERO */}
+            <section className='w-full relative py-5'>
+                <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl">
+                        {show.name}
+                    </h1>
+
+                    <span className="text-xs sm:text-sm italic">
+                        TV • {Released_Ended(show.first_air_date, show.last_air_date)} • {show.episode_run_time[0] || 0}min
+                    </span>
+
+                    {/* TOP GRID */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mt-4">
+
+                        {/* POSTER */}
+                        <div className="lg:col-span-3">
+                            <img
+                                src={`${IMAGE_PATH}${show.poster_path}`}
+                                className="w-full aspect-[2/3] object-cover object-center rounded-lg"
+                            />
                         </div>
-                        {/* Video */}
-                        <div className="col-span-6 px-1">
+
+                        {/* VIDEO */}
+                        <div className="lg:col-span-6 aspect-video">
                             {trailerKey ? (
                                 <iframe
                                     width="100%"
                                     height="100%"
                                     src={`https://www.youtube.com/embed/${trailerKey}?mute=1&controls=1`}
                                     title="show Trailer"
-                                    className="w-full h-full border-0"
+                                    className="w-full h-full border-0 rounded-lg"
                                     allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                ></iframe>
+                                />
                             ) : (
-                                <div className="text-white bg-gray-500 h-full rounded-lg flex items-center justify-center">No trailer available.</div>
+                                <div className="text-white bg-gray-500 h-full rounded-lg flex items-center justify-center">
+                                    No trailer available.
+                                </div>
                             )}
                         </div>
-                        {/* Phosts/Videos */}
-                        <div className="col-span-3 px-1">
-                            {/* Videos Collection */}
-                            <div className="h-[50%] p-2 rounded-lg overflow-hidden">
-                                <div className="w-full h-full bg-gray-400 flex cursor-pointer justify-center items-center rounded-lg flex-col" onClick={() => handleZoomedContent('videos')}>
-                                    <FontAwesomeIcon icon={faPlay} className="text-4xl"/>
-                                    <div className="block">{show.videos.results.length} Videos</div>
+
+                        {/* MEDIA BOXES */}
+                        <div className="lg:col-span-3 grid grid-cols-2 lg:grid-cols-1 gap-3">
+
+                            <div className="p-2 rounded-lg overflow-hidden min-h-[140px]">
+                                <div
+                                    className="w-full h-full bg-gray-400 flex cursor-pointer justify-center items-center rounded-lg flex-col"
+                                    onClick={() => handleZoomedContent('videos')}
+                                >
+                                    <FontAwesomeIcon icon={faPlay} className="text-3xl sm:text-4xl" />
+                                    <div>{show.videos.results.length} Videos</div>
                                 </div>
                             </div>
-                            {/* Photos Collection */}
-                            <div className="h-[50%] p-2 rounded-lg overflow-hidden">
-                                <div className="w-full h-full bg-gray-400 flex justify-center cursor-pointer items-center rounded-lg flex-col" onClick={() => handleZoomedContent('photos')}>
-                                    <FontAwesomeIcon icon={faImages } className="text-4xl"/>
-                                    <div className="block">{show.images.posters.length} Photos</div>
+
+                            <div className="p-2 rounded-lg overflow-hidden min-h-[140px]">
+                                <div
+                                    className="w-full h-full bg-gray-400 flex cursor-pointer justify-center items-center rounded-lg flex-col"
+                                    onClick={() => handleZoomedContent('photos')}
+                                >
+                                    <FontAwesomeIcon icon={faImages} className="text-3xl sm:text-4xl" />
+                                    <div>{show.images.posters.length} Photos</div>
                                 </div>
                             </div>
+
                         </div>
+
                     </div>
                 </div>
             </section>
-            
+
+            {/* OVERVIEW */}
             <section className='w-full relative py-5'>
-                <div className='w-[1200px] max-w-full px-5 mx-auto'>
-                    <ul className="flex items-center -mx-2">
+                <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+
+                    <ul className="flex flex-wrap gap-2">
                         {
                             show.genres.map(row => (
-                                <li className="after:content-['•'] after:absolute relative after:right-0 after:top-1/2 after:-translate-y-1/2 pr-3 last:pr-2 last:after:content-none px-2">{row.name}</li>
+                                <li key={row.id}>
+                                    {row.name}
+                                </li>
                             ))
                         }
                     </ul>
 
-                    <div className="grid grid-cols-12 -mx-3">
-                        <div className="col-span-8 px-3">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-4">
+
+                        <div className="lg:col-span-8">
                             <p>{show.overview}</p>
-                            <p>Director: &nbsp;
+
+                            <p>
+                                Director:&nbsp;
                                 {show.created_by.map((row, index) => (
                                     <>
                                         <span className="text-red-500">{row.name}</span>
-                                        
                                         {index < show.created_by.length - 1 && <span> • </span>}
                                     </>
                                 ))}
                             </p>
+
                             <h3>Ratings</h3>
-                            <div className="flex flex-row items-center gap-x-2">
-                                <FontAwesomeIcon icon={faStar} className="text-2xl text-yellow-400"/>
+
+                            <div className="flex items-center gap-x-2">
+                                <FontAwesomeIcon icon={faStar} className="text-2xl text-yellow-400" />
                                 <div>
-                                    {/* Ratings */}
-                                    <p className="font-semibold text-lg">{show.vote_average.toFixed(1)} <span className="text-white/80 text-base">/ 10</span></p>
-                                    {/* Votes */}
-                                    <p className="text-sm text-white/80">{JSON.stringify(show.vote_count)}</p>
+                                    <p className="font-semibold text-lg">
+                                        {show.vote_average.toFixed(1)} / 10
+                                    </p>
+                                    <p className="text-sm text-white/80">
+                                        {show.vote_count}
+                                    </p>
                                 </div>
                             </div>
                         </div>
-                        <div className="col-span-4 px-3">
-                            <button onClick={() => LINK && window.open(LINK, '_blank')} className={`${LINK ? 'bg-red-500 cursor-pointer' : 'bg-red-300 cursor-default pointer-events-none'} min-w-32 p-[12px_4px] rounded-lg`}>Watch</button>
+
+                        <div className="lg:col-span-4">
+                            <button
+                                onClick={() => LINK && window.open(LINK, '_blank')}
+                                className={`${LINK ? 'bg-red-500 cursor-pointer' : 'bg-red-300 cursor-default pointer-events-none'} min-w-32 p-3 rounded-lg w-full`}
+                            >
+                                Watch
+                            </button>
 
                             <div className="flex gap-x-5 mt-4">
-                                <FontAwesomeIcon onClick={handleLike} icon={faHeart} className={`text-2xl cursor-pointer ${like ? 'text-red-500' : 'text-white'}`}/>
-                                <FontAwesomeIcon 
-                                    onClick={() => {
+                                <FontAwesomeIcon onClick={handleLike} icon={faHeart} className={`text-2xl cursor-pointer ${like ? 'text-red-500' : 'text-white'}`} />
+
+                                <FontAwesomeIcon
+                                    onClick={() =>
                                         document.getElementById("commentsSection")?.scrollIntoView({
                                             behavior: "smooth",
                                         })
-                                    }}
-                                    
-                                    icon={faCommentDots} 
+                                    }
+                                    icon={faCommentDots}
                                     className="text-2xl cursor-pointer"
                                 />
                             </div>
                         </div>
+
                     </div>
                 </div>
             </section>
 
+            {/* SEASONS */}
             <section className='w-full relative py-5'>
-                <div className='w-[1200px] max-w-full px-5 mx-auto'>
-                    
-                        
-                    {/* Episodes Selector */}
-                    <div className="w-full text-right mb-5">
+                <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
 
+                    <div className="text-right mb-5">
                         <select
-                            onChange={(e) => handleSelectedEpisode(episodes?.episodes[e.target.value - 1]?.episode_number || "")}
-                            className="bg-gray-800 text-white rounded px-2 py-1 ml-3"
+                            onChange={(e) =>
+                                handleSelectedEpisode(
+                                    episodes?.episodes[e.target.value - 1]?.episode_number || ""
+                                )
+                            }
                             value={selected_episode || ""}
-                            >
-
-                            <option value="" >None</option>
-
+                            className="bg-gray-800 text-white rounded px-2 py-1"
+                        >
+                            <option value="">None</option>
                             {episodes?.episodes.map((col) => (
                                 <option key={col.episode_number} value={col.episode_number}>
-                                Episode {col.episode_number}
+                                    Episode {col.episode_number}
                                 </option>
                             ))}
                         </select>
-                        
                     </div>
 
-                    <div className="grid grid-cols-12 -mx-2">    
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
-                        {/* Vertical */}
-                        <div className="px-2 col-span-1">
-                            <div className="bg-gray-900 h-auto w-full flex flex-col items-center rounded-2xl p-[5px_10px_10px]">
-                                <h3 className="mb-5 text-center text-white/75 text-[20px] tracking-tight">Seasons</h3>
+                        {/* SEASONS */}
+                        <div className="lg:col-span-1 flex lg:flex-col flex-row flex-wrap gap-2 justify-center bg-gray-900 p-2 rounded-2xl">
 
-                                {
-                                    show.seasons.sort((a,b) => b.season_number - a.season_number).map(row => (
-                                        <div className={`${selected_season === row.season_number ? "bg-red-500 font-semibold" : "bg-gray-400 font-normal"} w-9 h-9 rounded-full inline-flex items-center justify-center text-white mb-3 [&:last-of-type]:mb-0 cursor-pointer`} onClick={() => setSelectedSeason(row.season_number)}>{row.season_number}</div>
-                                    ))
-                                }
-                                
-                            </div>
-                        </div>
-
-                        <div className="px-2 col-span-11 flex flex-row h-max">
-                           
-                            {/* Content */}
+                            <h3 className="w-full text-center text-white/75 mb-2">
+                                Seasons
+                            </h3>
 
                             {
-                                selected_season !== null && episodes ? 
-                                ( <Episodes selected_season={selected_season} selected_episode={selected_episode} episodes={episodes}/> ) 
-                                : 
-                                (<div className="w-full mt-auto mb-auto text-center text-2xl">No Results</div>)
+                                show.seasons
+                                    .sort((a, b) => b.season_number - a.season_number)
+                                    .map(row => (
+                                        <div
+                                            key={row.season_number}
+                                            className={`${selected_season === row.season_number ? "bg-red-500" : "bg-gray-400"} w-9 h-9 rounded-full flex items-center justify-center cursor-pointer`}
+                                            onClick={() => setSelectedSeason(row.season_number)}
+                                        >
+                                            {row.season_number}
+                                        </div>
+                                    ))
                             }
-                           
+
                         </div>
+
+                        {/* EPISODES */}
+                        <div className="lg:col-span-11">
+                            {
+                                selected_season !== null && episodes
+                                    ? (
+                                        <Episodes
+                                            selected_season={selected_season}
+                                            selected_episode={selected_episode}
+                                            episodes={episodes}
+                                        />
+                                    )
+                                    : (
+                                        <div className="text-center text-2xl">
+                                            No Results
+                                        </div>
+                                    )
+                            }
+                        </div>
+
                     </div>
                 </div>
             </section>
 
+            {/* CAST */}
             <section className='w-full relative py-5'>
-                <div className='w-[1200px] max-w-full px-5 mx-auto'>
-                    <h2 className="ml-[25px] mb-5 text-xl">Cast</h2>
-                    
-                    <div className='w-full h-auto relative px-[25px]'>
-                        <FontAwesomeIcon icon={faChevronLeft} className="custom-prev-show absolute left-0 top-1/2 -translate-y-1/2 text-white shadow text-[25px]"></FontAwesomeIcon>
-                        <FontAwesomeIcon icon={faChevronRight} className="custom-next-show absolute right-0 top-1/2 -translate-y-1/2 text-white shadow text-[25px]"></FontAwesomeIcon>
+                <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+
+                    <h2 className="text-xl mb-4">Cast</h2>
+
+                    <div className="relative px-4 sm:px-6 lg:px-10">
 
                         <Swiper
                             modules={[Navigation, Pagination]}
-                            onSwiper={(swiper) => (swiperRef.current = swiper)}
                             navigation={{
-                            nextEl: '.custom-next-show',
-                            prevEl: '.custom-prev-show',
+                                nextEl: '.custom-next-show',
+                                prevEl: '.custom-prev-show',
                             }}
-                            
                             spaceBetween={30}
-                            slidesPerView={4}
-                            className=""
+                            breakpoints={{
+                                0: { slidesPerView: 2 },
+                                640: { slidesPerView: 3 },
+                                1024: { slidesPerView: 4 }
+                            }}
                         >
                             {
                                 allActors.map(row => (
-                                    <SwiperSlide>
+                                    <SwiperSlide key={row.id}>
                                         <div>
-                                            {row.profile_path ? (<img src={`${IMAGE_PATH}${row.profile_path}`} alt={`${row.name}`} className="w-full h-[340px] object-center object-cover"/>) : (<img src={missing_actor} alt={`${row.name}`} className="w-full h-[340px] object-center object-cover"/>)}
+                                            <img
+                                                src={
+                                                    row.profile_path
+                                                        ? `${IMAGE_PATH}${row.profile_path}`
+                                                        : missing_actor
+                                                }
+                                                className="aspect-[2/3] w-full object-cover"
+                                            />
                                             <h3>{row.name}</h3>
-                                            <span className="block">{row.character}</span>
+                                            <span>{row.character}</span>
                                         </div>
                                     </SwiperSlide>
                                 ))
                             }
-
                         </Swiper>
-                    </div>
 
+                    </div>
                 </div>
             </section>
 

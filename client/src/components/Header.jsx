@@ -14,6 +14,7 @@ function Header() {
     const [choice, setChoice] = useState(null);
     const [user, setUser] = useState(null);
     const [userInfo, setUserInfo] = useState({});
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const navigate = useNavigate();
 
@@ -96,75 +97,174 @@ function Header() {
 
     return (
         <>
-            <header className='w-full relative py-5'>
-                <div className='w-[1200px] max-w-full px-5 mx-auto'>
-                    <div className='flex w-full flex-row items-center justify-between'>
-                        <div className='flex items-center'>
-                            <h1 className='text-4xl'>MovieCenter</h1>
+            <header className="w-full relative py-5 border-b border-gray-800">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex items-center justify-between">
 
-                            <div className='ml-12'>
-                                {/*List for Desktop*/}
-                                <ul id='onlyDesktopNavigation' className='flex flex-row -mx-5'>
-                                    <NavLink  to={`/`}  className={({ isActive }) => (isActive ? "active" : "")}>Home</NavLink>
-                                    <NavLink  to={`/browse`} className={({ isActive }) => (isActive ? "active" : "")}>Browse</NavLink>
-                                    <NavLink  to={`/ai-search`} className={({ isActive }) => (isActive ? "active" : "")}>AI Search</NavLink>
-                                </ul>
+                        {/* Logo + Desktop Navigation */}
+                        <div className="flex items-center">
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">
+                                MovieCenter
+                            </h1>
 
-                                {/*List for Mobile*/}
-                                <ul id='onlyMobileNavigation' className='hidden'>
-                                     <NavLink  to={`/`}  className={({ isActive }) => (isActive ? "active" : "")}>Home</NavLink>
-                                    <NavLink  to={`/browse`} className={({ isActive }) => (isActive ? "active" : "")}>Browse</NavLink>
-                                    <NavLink  to={`/ai-search`} className={({ isActive }) => (isActive ? "active" : "")}>AI Search</NavLink>
-                                </ul>
-                            </div>
+                            {/* Desktop Navigation */}
+                            <ul className="hidden md:flex flex-row ml-12">
+                                <NavLink
+                                    to="/"
+                                    className={({ isActive }) => isActive ? "active px-5" : "px-5"}
+                                >
+                                    Home
+                                </NavLink>
+
+                                <NavLink
+                                    to="/browse"
+                                    className={({ isActive }) => isActive ? "active px-5" : "px-5"}
+                                >
+                                    Browse
+                                </NavLink>
+
+                                <NavLink
+                                    to="/ai-search"
+                                    className={({ isActive }) => isActive ? "active px-5" : "px-5"}
+                                >
+                                    AI Search
+                                </NavLink>
+                            </ul>
                         </div>
 
-                        {
-                            user === null ?
-                            
-                            (
-                                <div>
-                                    {/* Form for Desktop */}
-                                    <div id='onlyDesktop' className='-mx-2 flex items-center'>
-                                        <div className='px-2'>
+                        {/* Desktop Right Side */}
+                        <div className="hidden md:flex items-center">
+                            {
+                                user === null ?
+                                (
+                                    <div className="-mx-2 flex items-center">
+                                        <div className="px-2">
                                             <LoginButton onClick={handleLogIn}/>
                                         </div>
 
-                                        <div className='px-2'>
+                                        <div className="px-2">
                                             <RegisterButton onClick={handleSignUp}/>
                                         </div>
                                     </div>
-                                    {/* Form for Mobile */}
-                                    <div id='onlyMobile' className='hidden'>
-                                        <LoginButton />
-                                        <RegisterButton />
+                                )
+                                :
+                                (
+                                    <div className="flex flex-row items-center gap-x-5">
+                                        <span
+                                            className="relative cursor-pointer"
+                                            onClick={handleNavigation_to_like}
+                                        >
+                                            <b
+                                                className={`absolute -top-3 -right-1 text-sm ${
+                                                    likeCount > 0 ? "block" : "hidden"
+                                                }`}
+                                            >
+                                                {likeCount}
+                                            </b>
+
+                                            <FontAwesomeIcon
+                                                icon={faHeart}
+                                                className="text-2xl text-red-500"
+                                            />
+                                        </span>
+
+                                        <User_profile info={userInfo} />
                                     </div>
-                                </div>
-                            )
-                            :
-                            (
-                                // User dashboard
-                                <div className='flex flex-row items-center gap-x-5'>
-                                    {/* Liked */}
-                                    <span className='relative cursor-pointer' onClick={handleNavigation_to_like}>
-                                        <b className={`absolute -top-3 -right-1 text-sm ${likeCount > 0 ? 'block' : 'hidden'}`}>{likeCount}</b>
-                                        <FontAwesomeIcon icon={faHeart} className='text-2xl text-red-500' />
-                                    </span>
-                                    {/* Profile */}
-                                    <User_profile info={userInfo} />
-                                </div>
-                            )
-                        }
-                       
+                                )
+                            }
+                        </div>
+
+                        {/* Mobile Hamburger */}
+                        <button
+                            className="md:hidden text-2xl"
+                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                        >
+                            ☰
+                        </button>
                     </div>
+
+                    {/* Mobile Menu */}
+                    {
+                        mobileMenuOpen && (
+                            <div className="md:hidden pt-5">
+
+                                <ul className="flex flex-col gap-y-4">
+                                    <NavLink
+                                        to="/"
+                                        className={({ isActive }) => isActive ? "active" : ""}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                        Home
+                                    </NavLink>
+
+                                    <NavLink
+                                        to="/browse"
+                                        className={({ isActive }) => isActive ? "active" : ""}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                        Browse
+                                    </NavLink>
+
+                                    <NavLink
+                                        to="/ai-search"
+                                        className={({ isActive }) => isActive ? "active" : ""}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                        AI Search
+                                    </NavLink>
+                                </ul>
+
+                                <div className="mt-5">
+                                    {
+                                        user === null ?
+                                        (
+                                            <div className="flex flex-col gap-y-3">
+                                                <LoginButton onClick={handleLogIn}/>
+                                                <RegisterButton onClick={handleSignUp}/>
+                                            </div>
+                                        )
+                                        :
+                                        (
+                                            <div className="flex flex-col gap-y-4">
+                                                <span
+                                                    className="relative w-fit cursor-pointer"
+                                                    onClick={handleNavigation_to_like}
+                                                >
+                                                    <b
+                                                        className={`absolute -top-3 -right-3 text-sm ${
+                                                            likeCount > 0 ? "block" : "hidden"
+                                                        }`}
+                                                    >
+                                                        {likeCount}
+                                                    </b>
+
+                                                    <FontAwesomeIcon
+                                                        icon={faHeart}
+                                                        className="text-2xl text-red-500"
+                                                    />
+                                                </span>
+
+                                                <User_profile info={userInfo}/>
+                                            </div>
+                                        )
+                                    }
+                                </div>
+                            </div>
+                        )
+                    }
                 </div>
             </header>
 
             {
-                openModal && choice && <Register close={handleClose} my_choice={choice}/>
+                openModal &&
+                choice &&
+                <Register
+                    close={handleClose}
+                    my_choice={choice}
+                />
             }
         </>
-    )
+    );
 }
 
 export default Header

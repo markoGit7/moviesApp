@@ -343,26 +343,35 @@ function Comments({post, media_type, token, forceLog_out}) {
         <>
             {/* Comments Block */}
             <section className='w-full relative py-5' id='commentsSection'>
-                <div className='w-[1200px] max-w-full px-5 mx-auto'>
-                    {/* Counts/Ajustments */}
+                <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+
+                    {/* Title */}
                     <div className="mb-5">
-                        <h3 className="font-bold text-lg">{totalComments} Comments</h3>
+                        <h3 className="font-bold text-base sm:text-lg">
+                            {totalComments} Comments
+                        </h3>
                     </div>
-                    {/* Enter Coment */}
-                    <div className="w-full h-auto relative pl-13 mb-10">
-                        <div className="bg-blue-400 rounded-full w-10 h-10 p-1 flex justify-center items-center absolute left-0 top-1/2 -translate-y-1/2">
-                            <img src={userInfo?.profile_image || default_profileImage} className="w-10 h-10 object-cover object-center rounded-full absolute top-0 left-0"/>
+
+                    {/* Input */}
+                    <div className="w-full relative pl-12 sm:pl-14 mb-8 sm:mb-10">
+
+                        {/* Avatar */}
+                        <div className="bg-blue-400 rounded-full w-9 h-9 sm:w-10 sm:h-10 p-1 flex justify-center items-center absolute left-0 top-1/2 -translate-y-1/2">
+                            <img
+                                src={userInfo?.profile_image || default_profileImage}
+                                className="w-full h-full object-cover rounded-full"
+                            />
                         </div>
+
                         <form action="#">
-                            <div className={`relative ${replyOn.author ? 'flex gap-x-1' : 'block'}`}>
-                                
-                                {
-                                    replyOn.author && 
-                                    (
-                                        <span className='inline-block bg-teal-600 text-sm rounded-lg p-[0px_3px]'>@{replyOn.author}</span>
-                                    )
-                                }
-                                
+                            <div className={`relative flex items-start gap-2`}>
+
+                                {replyOn.author && (
+                                    <span className='inline-block bg-teal-600 text-xs sm:text-sm rounded-lg px-2 py-[2px]'>
+                                        @{replyOn.author}
+                                    </span>
+                                )}
+
                                 <textarea
                                     value={Input}
                                     onInput={(e) => {
@@ -370,34 +379,49 @@ function Comments({post, media_type, token, forceLog_out}) {
                                         e.target.style.height = `${e.target.scrollHeight}px`;
                                     }}
                                     onChange={(e) => !token ? null : setInput(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Backspace' && Input === "" && replyOn.author ? handleRemoveReply() : null}
+                                    onKeyDown={(e) =>
+                                        e.key === 'Backspace' &&
+                                        Input === "" &&
+                                        replyOn.author ? handleRemoveReply() : null
+                                    }
                                     onClick={() => !token && alert('Log in first, to comment')}
-                                    className={`w-full resize-none overflow-hidden border-b-white border-b-1 outline-none `}
-
-                                    rows="1"
+                                    className="w-full resize-none overflow-hidden border-b border-white outline-none text-sm sm:text-base pr-8"
+                                    rows={1}
                                     placeholder="Add a comment..."
                                 />
-                                <FontAwesomeIcon onClick={handleCommentSubmit} icon={faPaperPlane} className={`${Input.trim() === "" ? "pointer-events-none text-gray-400" : "pointer-events-auto text-white"} text-base cursor-pointer absolute top-1/2 -translate-y-1/2 right-0`}/>
+
+                                <FontAwesomeIcon
+                                    onClick={handleCommentSubmit}
+                                    icon={faPaperPlane}
+                                    className={`${Input.trim() === ""
+                                        ? "pointer-events-none text-gray-400"
+                                        : "pointer-events-auto text-white"
+                                        } text-sm sm:text-base cursor-pointer absolute top-1/2 -translate-y-1/2 right-0`}
+                                />
+
                             </div>
                         </form>
                     </div>
 
-                    {/* All Comments Block */}
+                    {/* Comments List */}
                     {comments.length > 0 ? (
-                            comments.map(comment => (
-                                <Comment key={comment.id} comment={comment} handleReplySubmit={handleReplySubmit} handleReactingSubmit={handleReactingSubmit} handleDeleteComment={handleDeleteComment}/>
-                            ))
-                        ) 
-                        : 
-                        (
-                            <div>No Comments...</div>
-                        )
-                    }
-                    
+                        comments.map(comment => (
+                            <Comment
+                                key={comment.id}
+                                comment={comment}
+                                handleReplySubmit={handleReplySubmit}
+                                handleReactingSubmit={handleReactingSubmit}
+                                handleDeleteComment={handleDeleteComment}
+                            />
+                        ))
+                    ) : (
+                        <div className="text-sm text-white/70">No Comments...</div>
+                    )}
+
                 </div>
             </section>
         </>
-    )
+    );
 }
 
 export default Comments
@@ -406,73 +430,114 @@ const Comment = ({ comment, handleReplySubmit, handleReactingSubmit, handleDelet
     const [showReplies, setShowReplies] = useState(false);
 
     return (
-        <div className="mb-10 ml-6">
+        <div className="mb-6 sm:mb-10 ml-0 sm:ml-6">
 
-            <div className="relative pl-13">
+            <div className="relative pl-12 sm:pl-13">
+
+                {/* Avatar */}
                 <img
                     src={comment.profile_image || default_profileImage}
-                    className="w-10 h-10 rounded-full absolute top-0 left-0 object-cover"
+                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-full absolute top-0 left-0 object-cover"
                 />
 
                 <div>
-                    <div className="flex gap-x-5 items-center">
-                        <h3 className={comment.display_name === "Me" ? "text-yellow-400" : "text-white"}>
+
+                    {/* Header Row */}
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 items-center">
+
+                        <h3 className={comment.display_name === "Me"
+                            ? "text-yellow-400 text-sm sm:text-base"
+                            : "text-white text-sm sm:text-base"
+                        }>
                             @{comment.display_name}
                         </h3>
-                        
-                        <span className="text-white/80 text-sm">{comment.time_ago}</span>
-                        
+
+                        <span className="text-white/80 text-xs sm:text-sm">
+                            {comment.time_ago}
+                        </span>
+
                         <span className={`relative group ml-auto ${comment.user_name === userInfo?.user_name ? 'inline-block' : 'hidden'}`}>
                             <b className='cursor-pointer'>•••</b>
-                            <ul className='absolute  right-0 origin-top-right w-20 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 text-center rounded-lg bg-[#1f2937] transition-all duration-300 ease-in-out'>
-                                <li className='cursor-pointer hover:text-red-500 text-white' onClick={() => userInfo.user_name && comment.user_name && handleDeleteComment(comment.id)}>Delete</li>
+
+                            <ul className='absolute right-0 w-20 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 text-center rounded-lg bg-[#1f2937] transition-all duration-300 ease-in-out'>
+                                <li
+                                    className='cursor-pointer hover:text-red-500 text-white text-sm'
+                                    onClick={() =>
+                                        userInfo.user_name &&
+                                        comment.user_name &&
+                                        handleDeleteComment(comment.id)
+                                    }
+                                >
+                                    Delete
+                                </li>
                             </ul>
                         </span>
+
                     </div>
 
-                    <p>{comment.message}</p>
+                    {/* Message */}
+                    <p className="text-sm sm:text-base mt-1">
+                        {comment.message}
+                    </p>
 
-                    <div className="flex items-center gap-x-4 mt-1">
-                        {/* Like */}
-                        <div>
-                            <FontAwesomeIcon icon={faThumbsUp} className={`${comment.my_reaction === 'like' ? '!text-blue-500' : '!text-white'} text-lg cursor-pointer`} onClick={() => handleReactingSubmit(comment.id, comment.user_name, true)}/>
+                    {/* Actions */}
+                    <div className="flex flex-wrap items-center gap-3 sm:gap-4 mt-2 text-sm sm:text-base">
+
+                        <div className="flex items-center gap-1">
+                            <FontAwesomeIcon
+                                icon={faThumbsUp}
+                                className={`${comment.my_reaction === 'like' ? '!text-blue-500' : '!text-white'} cursor-pointer`}
+                                onClick={() => handleReactingSubmit(comment.id, comment.user_name, true)}
+                            />
                             {comment.total_likes}
                         </div>
-                        {/* Dislike */}
-                        <div>
-                            <FontAwesomeIcon icon={faThumbsDown} className={`${comment.my_reaction === 'dislike' ? '!text-blue-500' : '!text-white'} text-lg cursor-pointer`} onClick={() => handleReactingSubmit(comment.id, comment.user_name, false)}/>
+
+                        <div className="flex items-center gap-1">
+                            <FontAwesomeIcon
+                                icon={faThumbsDown}
+                                className={`${comment.my_reaction === 'dislike' ? '!text-blue-500' : '!text-white'} cursor-pointer`}
+                                onClick={() => handleReactingSubmit(comment.id, comment.user_name, false)}
+                            />
                             {comment.total_dislikes}
                         </div>
-                        <div>
-                            <FontAwesomeIcon
-                                icon={faReply}
-                                onClick={() => handleReplySubmit(comment.id, comment.user_name)}
-                                className="cursor-pointer"
-                            />
-                        </div>
+
+                        <FontAwesomeIcon
+                            icon={faReply}
+                            onClick={() => handleReplySubmit(comment.id, comment.user_name)}
+                            className="cursor-pointer"
+                        />
+
                     </div>
 
-                    {/* ▼ SHOW / HIDE REPLIES BUTTON */}
+                    {/* Replies toggle */}
                     {comment.replies.length > 0 && (
                         <button
                             onClick={() => setShowReplies(!showReplies)}
-                            className="text-blue-400 text-sm mt-2 flex items-center gap-1"
+                            className="text-blue-400 text-xs sm:text-sm mt-2 flex items-center gap-1"
                         >
                             {showReplies ? "▲ Hide replies" : "▼ View replies"}
                             <span>({comment.replies.length})</span>
                         </button>
                     )}
+
                 </div>
             </div>
 
-            {/* Nested replies */}
+            {/* Replies */}
             {showReplies && (
-                <div className="ml-8 mt-4 border-l border-white/20 pl-4">
+                <div className="ml-4 sm:ml-8 mt-3 sm:mt-4 border-l border-white/20 pl-3 sm:pl-4">
                     {comment.replies.map(reply => (
-                        <Comment key={reply.id} comment={reply} handleReplySubmit={handleReplySubmit} handleReactingSubmit={handleReactingSubmit} handleDeleteComment={handleDeleteComment} />
+                        <Comment
+                            key={reply.id}
+                            comment={reply}
+                            handleReplySubmit={handleReplySubmit}
+                            handleReactingSubmit={handleReactingSubmit}
+                            handleDeleteComment={handleDeleteComment}
+                        />
                     ))}
                 </div>
             )}
+
         </div>
     );
 };
