@@ -182,7 +182,6 @@ function Comments({post, media_type, token, forceLog_out}) {
 
 
         console.log('The response after submitting a comment: ', result);
-        alert(result.message);
 
         //call coments
         await loadComments();
@@ -267,7 +266,6 @@ function Comments({post, media_type, token, forceLog_out}) {
             return;
         }
 
-        alert(results_s.message);
 
         await loadComments();
     };

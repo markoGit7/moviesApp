@@ -96,7 +96,7 @@ function User_profile({info}) {
 
         //Detect if the profile image is changed or if is selected the same image
         if(response_s.status === 200) {
-            alert(result.message);
+            console.log("Profile Image Shanged")
             window.location.reload(); // 🔄 refresh the page
         } else if(response_s.status === 300) {
             alert(result.message);

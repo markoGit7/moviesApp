@@ -156,7 +156,7 @@ function Liked() {
         const answer = confirm("Are you sure you want to delete this?");
 
         if(!answer) {
-            alert("Deleting Canceled");
+            console.log("Cancel delete");
             return;
         }
         
@@ -181,7 +181,7 @@ function Liked() {
         }
 
         if(response_s.status === 204) {
-            alert("Successfull Deleting");
+            console.log("Deleted Successfully");
         }
 
         await AllLiked_DB();
