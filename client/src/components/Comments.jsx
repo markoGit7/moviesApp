@@ -313,7 +313,6 @@ function Comments({post, media_type, token, forceLog_out}) {
         }
 
 
-        alert(results_s.message);
         await loadComments();
     }
 
