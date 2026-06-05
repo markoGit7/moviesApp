@@ -428,7 +428,7 @@ export default Comments
 
 const Comment = ({ comment, handleReplySubmit, handleReactingSubmit, handleDeleteComment }) => {
     const [showReplies, setShowReplies] = useState(false);
-
+    const [showMenu, setShowMenu] = useState(null);
     return (
         <div className="mb-6 sm:mb-10 ml-0 sm:ml-6">
 
@@ -456,21 +456,58 @@ const Comment = ({ comment, handleReplySubmit, handleReactingSubmit, handleDelet
                             {comment.time_ago}
                         </span>
 
-                        <span className={`relative group ml-auto ${comment.user_name === userInfo?.user_name ? 'inline-block' : 'hidden'}`}>
-                            <b className='cursor-pointer'>•••</b>
+                        <span
+                        className={`relative ml-auto ${
+                            comment.user_name === userInfo?.user_name
+                                ? 'inline-block'
+                                : 'hidden'
+                        }`}
+                        >   
+                            <b
+                                className="cursor-pointer select-none"
+                                onClick={() =>
+                                    setShowMenu(
+                                        showMenu === comment.id
+                                            ? null
+                                            : comment.id
+                                    )
+                                }
+                            >
+                                •••
+                            </b>
 
-                            <ul className='absolute right-0 w-20 opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 text-center rounded-lg bg-[#1f2937] transition-all duration-300 ease-in-out'>
-                                <li
-                                    className='cursor-pointer hover:text-red-500 text-white text-sm'
-                                    onClick={() =>
-                                        userInfo.user_name &&
-                                        comment.user_name &&
-                                        handleDeleteComment(comment.id)
-                                    }
+                            {showMenu === comment.id && (
+                                <ul
+                                    className="
+                                        absolute
+                                        right-0
+                                        top-full
+                                        mt-1
+                                        w-24
+                                        text-center
+                                        rounded-lg
+                                        bg-[#1f2937]
+                                        shadow-lg
+                                        z-50
+                                    "
                                 >
-                                    Delete
-                                </li>
-                            </ul>
+                                    <li
+                                        className="
+                                            cursor-pointer
+                                            hover:text-red-500
+                                            text-white
+                                            text-sm
+                                            py-2
+                                        "
+                                        onClick={() => {
+                                            handleDeleteComment(comment.id);
+                                            setShowMenu(null);
+                                        }}
+                                    >
+                                        Delete
+                                    </li>
+                                </ul>
+                            )}
                         </span>
 
                     </div>

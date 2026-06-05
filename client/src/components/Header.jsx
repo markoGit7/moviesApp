@@ -123,12 +123,6 @@ function Header() {
                                     Browse
                                 </NavLink>
 
-                                <NavLink
-                                    to="/ai-search"
-                                    className={({ isActive }) => isActive ? "active px-5" : "px-5"}
-                                >
-                                    AI Search
-                                </NavLink>
                             </ul>
                         </div>
 
@@ -205,13 +199,6 @@ function Header() {
                                         Browse
                                     </NavLink>
 
-                                    <NavLink
-                                        to="/ai-search"
-                                        className={({ isActive }) => isActive ? "active" : ""}
-                                        onClick={() => setMobileMenuOpen(false)}
-                                    >
-                                        AI Search
-                                    </NavLink>
                                 </ul>
 
                                 <div className="mt-5">

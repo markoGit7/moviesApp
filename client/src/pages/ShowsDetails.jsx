@@ -471,25 +471,27 @@ function ShowsDetails() {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
 
                         {/* SEASONS */}
-                        <div className="lg:col-span-1 flex lg:flex-col flex-row flex-wrap gap-2 justify-center bg-gray-900 p-2 rounded-2xl">
+                        <div className="lg:col-span-1">
 
-                            <h3 className="w-full text-center text-white/75 mb-2">
+                            <h3 className="w-full text-center text-white/75 mb-2 ">
                                 Seasons
                             </h3>
 
-                            {
-                                show.seasons
-                                    .sort((a, b) => b.season_number - a.season_number)
-                                    .map(row => (
-                                        <div
-                                            key={row.season_number}
-                                            className={`${selected_season === row.season_number ? "bg-red-500" : "bg-gray-400"} w-9 h-9 rounded-full flex items-center justify-center cursor-pointer`}
-                                            onClick={() => setSelectedSeason(row.season_number)}
-                                        >
-                                            {row.season_number}
-                                        </div>
-                                    ))
-                            }
+                            <div className="flex lg:flex-col flex-row flex-wrap gap-2 items-center justify-center bg-gray-900 p-2 rounded-2xl h-[calc(100%-32px)]">
+                                {
+                                    show.seasons
+                                        .sort((a, b) => b.season_number - a.season_number)
+                                        .map(row => (
+                                            <div
+                                                key={row.season_number}
+                                                className={`${selected_season === row.season_number ? "bg-red-500" : "bg-gray-400"} w-9 h-9 rounded-full items-center justify-center cursor-pointer inline-flex`}
+                                                onClick={() => setSelectedSeason(row.season_number)}
+                                            >
+                                                {row.season_number}
+                                            </div>
+                                        ))
+                                }
+                            </div>
 
                         </div>
 
@@ -523,6 +525,17 @@ function ShowsDetails() {
                     <h2 className="text-xl mb-4">Cast</h2>
 
                     <div className="relative px-4 sm:px-6 lg:px-10">
+
+                        {/* Custom arrows */}
+                        <FontAwesomeIcon
+                            icon={faChevronLeft}
+                            className="custom-prev-show absolute left-0 top-1/2 -translate-y-1/2 text-white shadow text-xl sm:text-2xl lg:text-[25px] z-10"
+                        />
+    
+                        <FontAwesomeIcon
+                            icon={faChevronRight}
+                            className="custom-next-show absolute right-0 top-1/2 -translate-y-1/2 text-white shadow text-xl sm:text-2xl lg:text-[25px] z-10"
+                        />
 
                         <Swiper
                             modules={[Navigation, Pagination]}

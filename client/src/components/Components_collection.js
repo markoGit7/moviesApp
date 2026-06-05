@@ -12,6 +12,7 @@ export { default as Comments } from "./Comments";
 
 //Loaders
 export { default as SceletonLoading } from "./loaders/SceletonLoading";
+export {default as PageLoader} from "./loaders/PageLoader.jsx";
 
 //registration
 export { default as Register } from "./registration/Register";

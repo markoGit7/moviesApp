@@ -191,7 +191,11 @@ app.post("/user/update", auth, upload.single("profileImage"), async (req, res) =
 
 
 //Server is On
-app.get("/health", (req, res) => res.send("ok"));
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        status: "ok"
+    });
+});
 
 
 // ROUTS: Liking System

@@ -5,7 +5,7 @@ import default_profile from '../../assets/default_profile_image/default.png'
 
 function User_profile({info}) {
     const userInfo = info;
-
+    const [showMenu, setShowMenu] = useState(false);
     
     const handleLogout = async(forced = false) => {
         if(forced === true) {
@@ -106,18 +106,20 @@ function User_profile({info}) {
 
 
     return (
-        <div className="relative group w-full sm:w-auto">
+        <div className="relative w-full sm:w-auto">
 
             {/* Profile button */}
-            <div className="
-                flex items-center gap-2 sm:gap-3
-                px-2 sm:px-3 py-2
-                bg-white/10 rounded-xl
-                hover:bg-white/20 transition duration-200
-                cursor-pointer
-                w-full sm:w-auto
-            ">
-                
+            <div
+                onClick={() => setShowMenu(prev => !prev)}
+                className="
+                    flex items-center gap-2 sm:gap-3
+                    px-2 sm:px-3 py-2
+                    bg-white/10 rounded-xl
+                    hover:bg-white/20 transition duration-200
+                    cursor-pointer
+                    w-full sm:w-auto
+                "
+            >
                 <label
                     htmlFor="profileInput"
                     className="relative cursor-pointer rounded-full flex-shrink-0"
@@ -129,17 +131,15 @@ function User_profile({info}) {
                             w-9 h-9 sm:w-10 sm:h-10
                             rounded-full object-cover
                             border border-gray-300
-                            group-hover:opacity-90
                         "
                     />
 
                     <span className="
                         absolute inset-0
-                        opacity-0
                         flex items-center justify-center
-                        group-hover:opacity-100 group-hover:bg-black/40
                         rounded-full text-xl sm:text-2xl
-                        transition-all duration-300 ease-in-out
+                        opacity-0 hover:opacity-100 hover:bg-black/40
+                        transition-all duration-300
                     ">
                         +
                     </span>
@@ -161,26 +161,40 @@ function User_profile({info}) {
             </div>
 
             {/* Dropdown */}
-            <div className="
-                absolute right-0 mt-2
-                w-36 sm:w-40
-                bg-[#1f2937] text-white
-                rounded-xl shadow-lg
-                opacity-0 scale-95
-                group-hover:opacity-100 group-hover:scale-100
-                transition-all duration-200 origin-top-right
-                z-50
-            ">
+            <div
+                className={`
+                    absolute right-0 mt-2
+                    w-36 sm:w-40
+                    bg-[#1f2937]
+                    text-white
+                    rounded-xl
+                    shadow-lg
+                    z-50
+                    transition-all duration-200
+                    origin-top-right
+                    ${
+                        showMenu
+                            ? "opacity-100 scale-100 pointer-events-auto"
+                            : "opacity-0 scale-95 pointer-events-none"
+                    }
+                `}
+            >
                 <ul className="py-1 sm:py-2 text-xs sm:text-sm">
                     <li
-                        onClick={handleLogout}
+                        onClick={() => {
+                            handleLogout();
+                            setShowMenu(false);
+                        }}
                         className="px-3 sm:px-4 py-2 hover:bg-white/10 cursor-pointer text-red-400"
                     >
                         Logout
                     </li>
 
                     <li
-                        onClick={handleDeleteAccount}
+                        onClick={() => {
+                            handleDeleteAccount();
+                            setShowMenu(false);
+                        }}
                         className="px-3 sm:px-4 py-2 hover:bg-white/10 cursor-pointer text-red-400"
                     >
                         Delete Account

@@ -395,6 +395,17 @@ function MovieDetails() {
                     <h2 className="text-lg sm:text-xl mb-4">Cast</h2>
 
                     <div className="relative px-2 sm:px-4 lg:px-6">
+                        
+                        {/* Custom arrows */}
+                        <FontAwesomeIcon
+                            icon={faChevronLeft}
+                            className="custom-prev-movie absolute left-0 top-1/2 -translate-y-1/2 text-white shadow text-xl sm:text-2xl lg:text-[25px] z-10"
+                        />
+    
+                        <FontAwesomeIcon
+                            icon={faChevronRight}
+                            className="custom-next-movie absolute right-0 top-1/2 -translate-y-1/2 text-white shadow text-xl sm:text-2xl lg:text-[25px] z-10"
+                        />
 
                         <Swiper
                             modules={[Navigation, Pagination]}
