@@ -51,18 +51,52 @@ app.use(cors({
 // Middleware for JSON
 app.use(express.json());
 
-
-
-
 // AI search rout
-app.post('/myQuery', async(req, res) => {
-    const {query} = req.body;
-    const {user_media_type} = req.body;
+// app.post('/myQuery', async(req, res) => {
+//     const {query} = req.body;
+//     const {user_media_type} = req.body;
     
-    const results = await Find_Closest_Match(query, user_media_type);
+//     const results = await Find_Closest_Match(query, user_media_type);
 
-    res.json(results);
-});
+//     res.json(results);
+// });
+
+// LOGIC DOESNT FUNCTION FOR NOW
+// app.post('/validSource', async(req, res) => {
+
+//     const src = req.body.src;
+//     console.log(`New session: \n \n`);
+//     let option = null;
+//     for(let i = 0; i < src.length; i++) {
+
+//         try {
+//             const request = await fetch(src[i], {
+//                 method: "HEAD",
+//                 headers: {
+//                     'Accept': 'video/mp4,video/webm,*/*'
+//                 },
+//                 redirect: 'follow'
+//             });
+
+//             if(request.ok) {
+
+//                 const response = await request.json();
+
+//                 console.log(response);
+
+//                 break;
+//             }
+        
+//         } catch (err) {
+//             continue;
+//         }
+
+//     }
+
+//     res.json({status: 200, source: 'ok'})
+
+
+// })
 
 //Sing up route
 app.post('/auth/signup', async(req, res) => {
@@ -112,7 +146,7 @@ app.post('/auth/logout', async(req, res) => {
 });
 
 // Delete account
-app.delete('/auth/delete', auth, async(req, res) => {
+app.post('/auth/delete', auth, async(req, res) => {
     
     const user = req.user;
 
@@ -131,7 +165,7 @@ app.delete('/auth/delete', auth, async(req, res) => {
         path: "/"        
     });
 
-    res.status(deleteUserDB.status).json({message: "User Deleted!!!"});
+    res.json({status: 204, message: "User Deleted!!!"});
 });
 
 //Logged in user info
@@ -157,17 +191,11 @@ app.post('/user/info', auth, async(req, res) => {
 // User updates
 app.post("/user/update", auth, upload.single("profileImage"), async (req, res) => {
   
-
-    
     try {
         const user = req.user;
         const file = req.file;
         const file_type = req.file.mimetype;
         const MAX_SIZE = 200 * 1024;
-
-
-        
-
 
         //denie >200 file sizes
         if(file.size > MAX_SIZE) {
@@ -175,28 +203,17 @@ app.post("/user/update", auth, upload.single("profileImage"), async (req, res) =
             return;
         }
 
-
-        const response_db = await userUpdates(user.id, file.buffer, file_type);
-        
+        const response_db = await userUpdates(user.id, file.buffer, file_type);        
         
         if(response_db === null) {
-            return res.status(300).json({message: 'Profile image not changed'})
+            return res.json({status: 300, message: 'Profile image not changed'})
         }
 
-        res.status(200).json({message: 'Profile image updated'});
+        res.json({status: 200, message: 'Profile image updated'});
     } catch(error) {
         console.log('Error in user/update: ',error);
     } 
 });
-
-
-//Server is On
-app.get("/health", (req, res) => {
-    res.status(200).json({
-        status: "ok"
-    });
-});
-
 
 // ROUTS: Liking System
 
@@ -247,7 +264,7 @@ app.post('/like/getLiked', auth, async(req, res) => {
 });
 
 // delete selected liked posts by user
-app.delete('/like/delete', auth, async(req, res) => {
+app.post('/like/delete', auth, async(req, res) => {
     const user = req.user;
     const { data } = req.body;
 
