@@ -5,6 +5,9 @@ import React,{useState} from 'react'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash  } from "@fortawesome/free-solid-svg-icons";
 
+// Import global request
+import request from '../../api/globalRequests';
+
 function Log_form() {
     const [email, setEmail] = useState(null);
     const [password, setPassword] = useState(null);
@@ -13,29 +16,14 @@ function Log_form() {
     const handleSubmit = async(e) => {
         e.preventDefault();
 
+        const response = await request('http://localhost:3000/auth/login', 'post', false, 'off', {email: email, password: password});
 
-        const response = await fetch(`${import.meta.env.VITE_REQUEST_PATH}auth/login`, {
-            method: 'POST',
-            
-            headers: {
-            'Content-Type': 'application/json',
-            },
 
-            credentials: "include",
+        alert(response.message);
 
-            body: JSON.stringify({
-                email: email,
-                password: password
-            }),
-        });
-
-        const serverData = await response.json();
-
-        alert(serverData.message);
-
-        if(serverData.status === 200) {
+        if(response.status === 200) {
             console.log('add user_token to local storage');
-            localStorage.setItem('access_token', serverData.access_token);
+            localStorage.setItem('access_token', response.access_token);
             window.location.reload(); // 🔄 refresh the page
         }
     }

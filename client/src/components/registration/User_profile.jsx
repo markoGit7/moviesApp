@@ -3,6 +3,9 @@ import React, {useState} from 'react'
 
 import default_profile from '../../assets/default_profile_image/default.png'
 
+// Import global request
+import request from '../../api/globalRequests';
+
 function User_profile({info}) {
     const userInfo = info;
     const [showMenu, setShowMenu] = useState(false);
@@ -18,13 +21,9 @@ function User_profile({info}) {
         localStorage.removeItem('access_token');
 
         // Remove cookie
-        const response_s = await fetch(`${import.meta.env.VITE_REQUEST_PATH}auth/logout`, {
-            method: 'POST',
-            
-            credentials: 'include', // ✔️ include cookies in request
-        });
+        const response = await request('http://localhost:3000/auth/logout', 'post', true, 'off', null);
 
-        if(response_s.status === 200) {
+        if(response.status === 200) {
             alert('Sucessfully logged out');
         }
 
@@ -36,25 +35,16 @@ function User_profile({info}) {
 
         if(!answer) return;
 
-        const response_s = await fetch(`${import.meta.env.VITE_REQUEST_PATH}auth/delete`, {
-            method: 'DELETE',
-            
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                'Content-Type': 'application/json',
-            },
+        const response = await request('http://localhost:3000/auth/delete', 'post', true, 'off', null);
 
-            credentials: 'include', // ✔️ include cookies in request
-        });
-
-        if (response_s.status === 204) {
+        if (response.status === 204) {
             alert("Account deleted successfully");
             localStorage.removeItem('access_token');
             window.location.reload(); // 🔄 refresh the page
             return;
         }
 
-        const data = await response_s.json();
+        const data = response;
         console.log(data);
     }
 
@@ -67,38 +57,16 @@ function User_profile({info}) {
 
         formData.append("profileImage", file);
 
-        const response_s = await fetch(`${import.meta.env.VITE_REQUEST_PATH}user/update`, {
-            method: 'POST',
-
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-            },
-
-            credentials: "include",
-
-            body: formData,
-        });
+        const response = await request('http://localhost:3000/user/update', 'post', true, 'off', formData);
         
-        // when refresh token expires, detect
-        if(response_s.status === 401) {
-            handleLogout(true);
-            return;
-        }
-
-        // EXPIRED ACCESS TOKEN
-        const newToken = response_s.headers.get("x-new-access-token");
-        if(newToken) {
-            localStorage.setItem('access_token', newToken);
-        }
-        
-        const result = await response_s.json();
+        const result = response;
 
 
         //Detect if the profile image is changed or if is selected the same image
-        if(response_s.status === 200) {
+        if(result.status === 200) {
             console.log("Profile Image Shanged")
             window.location.reload(); // 🔄 refresh the page
-        } else if(response_s.status === 300) {
+        } else if(result.status === 300) {
             alert(result.message);
         }
     }

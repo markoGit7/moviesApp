@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar, faPlay, faImages, faX, faChevronCircleLeft, faChevronCircleRight, faHeart,  faCommentDots, faChevronLeft, faChevronRight  } from "@fortawesome/free-solid-svg-icons";
 
 //components
-import {Header, RecomendedMovies, Comments} from '../components/Components_collection.js'
+import {Header, RecomendedMovies, Comments, SceletonLoading} from '../components/Components_collection.js'
 
 //slider
 import { Swiper, SwiperSlide } from 'swiper/react'
@@ -22,19 +22,11 @@ import 'swiper/css/pagination'
 // Import image for actors without image
 import missing_actor from '../assets/actors/missing_actor.jpg'
 
-// FUNCTION: force logout 
-async function forceLog_out() {
-    localStorage.removeItem('access_token');
+// Import global request
+import request from "../api/globalRequests.js";
 
-    // Remove cookie
-    const response_s = await fetch(`${import.meta.env.VITE_REQUEST_PATH}auth/logout`, {
-        method: 'POST',
-        
-        credentials: 'include',
-    });
-
-    window.location.reload(); // 🔄 refresh the page
-}
+// Import Provider
+import ProviderLinks from "../api/Providers.js";
 
 const IMAGE_PATH = 'https://image.tmdb.org/t/p/w500';
 function MovieDetails() {
@@ -52,15 +44,17 @@ function MovieDetails() {
     const [zoomedVideos, setZoomedVideos] = useState(null);
     const [currentIndex, setCurrentIndex] = useState(0); 
 
+    const [getFromPlayer, setGetFromPlayer] = useState({link: '', loading: true});
+
     //user
     const token = Boolean(localStorage.getItem('access_token'));
 
-    // checking if token exists
-    useEffect(() => {
+    // // checking if token exists
+    // useEffect(() => {
         
-        console.table([{question: "Does Token Exists? ", answer: token ? "YES" : "NO"}], ['question', 'answer']);
+    //     console.table([{question: "Does Token Exists? ", answer: token ? "YES" : "NO"}], ['question', 'answer']);
       
-    }, [token]);
+    // }, [token]);
     
 
     //like const
@@ -117,19 +111,19 @@ function MovieDetails() {
 
         (async () => {
             const result = await contentByID(movieId, 'movie');
-
             setMovie(result);
-            console.log('moviesArr', result);
+
+            const obj = {
+                link: ProviderLinks(result.id, 'movie', null, null),
+                loading: false,
+            }
+            setGetFromPlayer(obj);
             
             if(result?.success === false) setRETURN(true); 
 
-            
-
             const video = result?.videos?.results.find(row => (row.type === 'Trailer' || row.type === 'Teaser') && row.site === 'YouTube') || null;
-            
             if (video) setTrailerKey(video.key);
 
-            console.log('movie_id', movieId)
         })();
         
     }, [movieId])
@@ -151,37 +145,9 @@ function MovieDetails() {
         if(!token) return;
 
         const isAlreadyLiked = async() => {
-            const response = await fetch(`${import.meta.env.VITE_REQUEST_PATH}like/verify`,{
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                    'Content-Type': 'application/json',
-                },
-
-                credentials: "include",
-
-                body: JSON.stringify({
-                    post_id: movieId,
-                    media_type: "movie"
-                }),
-            });
-            
-            // when refresh token expires, detect
-            if(response.status === 401) {
-                forceLog_out();
-                return;
-            }
-
-            const isLiked = await response.json();
-
-            // EXPIRED ACCESS TOKEN
-            const newToken = response.headers.get("x-new-access-token");
-            if(newToken) {
-                localStorage.setItem('access_token', newToken);
-            }
-
+            const response = await request('http://localhost:3000/like/verify', 'post', true, 'off', {post_id: movieId, media_type:"movie"});
+            const isLiked = response;
             setLike(isLiked.liked);
-
         };
 
         isAlreadyLiked();
@@ -193,39 +159,9 @@ function MovieDetails() {
             alert(`You need to log in to Like this post`);
             return;
         }
-
-        const response = await fetch(`${import.meta.env.VITE_REQUEST_PATH}like`,{
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                'Content-Type': 'application/json',
-            },
-
-            credentials: "include",
-
-            body: JSON.stringify({
-                post_id: movieId,
-                media_type: "movie"
-            }),
-        }); 
-
-        // when refresh token expires, detect
-        if(response.status === 401) {
-            forceLog_out();
-            return;
-        }
-
-        const isLiked = await response.json();
-        
+        const response = await request('http://localhost:3000/like', 'post', true, 'off', {post_id: movieId, media_type:"movie"}); 
+        const isLiked = response;
         setLike(isLiked.liked);
-
-        // EXPIRED ACCESS TOKEN
-        const newToken = response.headers.get("x-new-access-token");
-        if(newToken) {
-            localStorage.setItem('access_token', newToken);
-        }
-
-
         // recall likes count
         window.dispatchEvent(new Event("storageUpdate"));
 
@@ -388,6 +324,29 @@ function MovieDetails() {
                 </div>
             </section>
 
+            {/* PLAYER */}
+            {
+                !getFromPlayer.loading ? (
+
+                    <section className='w-full relative py-5'>
+                        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+                            <div className="w-full h-125 rounded-lg bg-gray-700 overflow-hidden mx-auto outline-1 outline-gray-900">
+                                <iframe width="100%" height="100%" src={getFromPlayer.link} frameborder="0"
+                                    className="w-full h-full"
+                                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                ></iframe>
+                            </div>
+                        </div>
+                    </section>
+                )
+                :
+                (
+                    <SceletonLoading contnetAmount={1}></SceletonLoading>
+                )
+            }
+
+
             {/* CAST */}
             <section className='w-full relative py-5'>
                 <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
@@ -450,7 +409,7 @@ function MovieDetails() {
             <RecomendedMovies movie_id={movieId} />
 
             {/* Comments Block */}
-            <Comments post={movieId} media_type={'movie'} token={token} forceLog_out={forceLog_out}/>
+            <Comments post={movieId} media_type={'movie'} token={token}/>
 
             {/* Zoom View Photos Content */}
             {

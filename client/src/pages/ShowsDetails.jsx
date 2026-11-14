@@ -8,7 +8,7 @@ import { faStar, faPlay, faImages, faX, faChevronCircleLeft, faChevronCircleRigh
 
 
 //components
-import {Header, RecomendedShows, Episodes, Comments} from '../components/Components_collection.js'
+import {Header, RecomendedShows, Episodes, Comments, SceletonLoading} from '../components/Components_collection.js'
 
 //slider
 import { Swiper, SwiperSlide } from 'swiper/react'
@@ -20,22 +20,17 @@ import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 
 
+// Import request function
+import request from '../api/globalRequests.js'
+
+
+// Import providers
+import ProviderLinks from "../api/Providers.js";
+
 // Import image for actors without image
 import missing_actor from '../assets/actors/missing_actor.jpg'
 
-// FUNCTION: force logout 
-async function forceLog_out() {
-    localStorage.removeItem('access_token');
 
-    // Remove cookie
-    const response_s = await fetch(`${import.meta.env.VITE_REQUEST_PATH}auth/logout`, {
-        method: 'POST',
-        
-        credentials: 'include',
-    });
-
-    window.location.reload(); // 🔄 refresh the page
-}
 
 const IMAGE_PATH = 'https://image.tmdb.org/t/p/w500';
 function ShowsDetails() {
@@ -57,16 +52,19 @@ function ShowsDetails() {
     const [zoomedVideos, setZoomedVideos] = useState(null);
     const [currentIndex, setCurrentIndex] = useState(0); 
 
+    const [sendToPlayer, setToPlayer] = useState({season: null, episode: null});
+    const [getFromPlayer, setGetFromPlayer] = useState({link:'', loading: true});
+
     //user
     const token = Boolean(localStorage.getItem('access_token'));
 
 
-    // checking if token exists
-    useEffect(() => {
+    // // checking if token exists
+    // useEffect(() => {
         
-        console.table([{question: "Does Token Exists? ", answer: token ? "YES" : "NO"}], ['question', 'answer']);
+    //     console.table([{question: "Does Token Exists? ", answer: token ? "YES" : "NO"}], ['question', 'answer']);
       
-    }, [token]);
+    // }, [token]);
     
 
     const Released_Ended = (start, end) => {//function for returning release-end date of a tv show
@@ -109,8 +107,6 @@ function ShowsDetails() {
 
     const handleSelectedEpisode = (ep) => {
 
-        console.log('Episode Number: ',ep)
-
         if(ep === "") {//When I select none show all the episodes
             setSelectedEpisode(null);
             return;
@@ -134,19 +130,16 @@ function ShowsDetails() {
 
         (async () => {
             const result = await contentByID(showId, 'tv');
-
             setShow(result);
-            console.log('showsArr', result);
 
             //get trailers
             const video = result.videos.results.find(row => row.type === 'Trailer' && row.site === 'YouTube') || null;
             
-            console.log("Video: ", video);
             if (video) setTrailerKey(video.key);
 
             //get acters
             const theCast = [...result.credits.cast];
-            console.log('From the Cast', theCast);
+
             //remove 2x Member form crew
             const singleMemberCrew = [];
             result.credits.crew.forEach(col => {
@@ -163,10 +156,24 @@ function ShowsDetails() {
             setAllActors([...theCast, ...theCrew]);
 
             // set selected_season to latest
-            const latest_season = result.seasons.sort((a, b) => b.season_number - a.season_number).find(row => row.episode_count !== 0).season_number;
+            const season_select = result.seasons.map(row => {
+                
+                if(row.season_number > 0) {
 
-            setSelectedSeason(latest_season);
-            
+                    const season = row;
+
+                    season.episode_count > 0;
+
+                    return season.season_number
+
+                } else {
+                    return false;
+                }
+            }).filter(Boolean)[0];
+
+
+            setSelectedSeason(season_select);
+
         })();
     
         
@@ -174,10 +181,19 @@ function ShowsDetails() {
 
     useEffect(() => {//Get the episodes of the selected season
         if(selected_season === null) return;
-       
+        
+        const link = ProviderLinks(show.id, 'tv', 1, selected_season);
+        
+        const obj = {
+            link: link,
+            loading: false,
+        }
+
+        setGetFromPlayer(obj);
+
+
         (async() => {//fetching episodes
             const result = await episodesBySeason(showId, selected_season);
-            console.log(`Season ${selected_season}: `, result);
             setEpisodes(result);
 
             //set the selected episode to none
@@ -206,41 +222,9 @@ function ShowsDetails() {
         if(!token) return;
 
         const isAlreadyLiked = async() => {
-            const response = await fetch(`${import.meta.env.VITE_REQUEST_PATH}like/verify`,{
-                method: 'POST',
-                
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                    'Content-Type': 'application/json',
-                },
-
-                credentials: "include", 
-
-                body: JSON.stringify({
-                    post_id: showId,
-                    media_type: "tv"
-                }),
-                
-            });
-
-
-            // when refresh token expires, detect
-            if(response.status === 401) {
-                forceLog_out();
-                return;
-            }
-
-            const isLiked = await response.json();
-            console.log("VERIFYING LIKED? ", isLiked.liked ? "LIKED" : "NOT LIKED");
-
-            // EXPIRED ACCESS TOKEN
-            const newToken = response.headers.get("x-new-access-token");
-            if(newToken) {
-                localStorage.setItem('access_token', newToken);
-            }
-            
+            const response = await request(`http://localhost:3000/like/verify`, 'post', true, 'off', {post_id: showId, media_type: "tv"});
+            const isLiked = response;
             setLike(isLiked.liked);
-
         };
 
         isAlreadyLiked();
@@ -254,42 +238,29 @@ function ShowsDetails() {
             return;
         }
 
-        const response = await fetch(`${import.meta.env.VITE_REQUEST_PATH}like`,{
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                'Content-Type': 'application/json',
-            },
-
-            credentials: "include", 
-            
-            body: JSON.stringify({
-                post_id: showId,
-                media_type: "tv"
-            }),
-        }); 
-
-        // when refresh token expires, detect
-        if(response.status === 401) {
-            forceLog_out();
-            return;
-        }
-
-        const isLiked = await response.json();
-        
+        const response = await request(`http://localhost:3000/like`, 'post', true, 'off', {post_id: showId, media_type: "tv"});
+        const isLiked = response;
         setLike(isLiked.liked);
-
-       // EXPIRED ACCESS TOKEN
-        const newToken = response.headers.get("x-new-access-token");
-        if(newToken) {
-            localStorage.setItem('access_token', newToken);
-        }
-
 
         // recall likes count
         window.dispatchEvent(new Event("storageUpdate"));
     }
-    
+
+
+    const handleEpisodePlay = (ep = 1) => {
+        const episodeNo = episodes.episodes.findIndex(row => row.id === ep.id) + 1;
+
+        setGetFromPlayer(prev => prev.loading === true);
+
+        setTimeout(() => {
+            const link = ProviderLinks(show.id, 'tv', episodeNo, selected_season);
+            const obj = {
+                link: link,
+                loading: false,
+            }
+            setGetFromPlayer(obj);
+        }, 300);    
+    }    
     
 
     
@@ -393,15 +364,12 @@ function ShowsDetails() {
                         <div className="lg:col-span-8">
                             <p>{show.overview}</p>
 
-                            <p>
+                            <div key={'creator'}>
                                 Director:&nbsp;
-                                {show.created_by.map((row, index) => (
-                                    <>
-                                        <span className="text-red-500">{row.name}</span>
-                                        {index < show.created_by.length - 1 && <span> • </span>}
-                                    </>
+                                {show?.created_by?.map((row, index) => (
+                                    <span key={index} className="text-red-500">{row.name} {index < show.created_by.length - 1 ? '•' : ''}</span>
                                 ))}
-                            </p>
+                            </div>
 
                             <h3>Ratings</h3>
 
@@ -444,6 +412,39 @@ function ShowsDetails() {
                     </div>
                 </div>
             </section>
+    
+            {/* PLAYER */}
+            {
+                show && (
+
+                    <section className='w-full relative py-5'>
+                        <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
+                            <div className="w-full h-125 rounded-lg bg-gray-700 overflow-hidden mx-auto relative outline-1 outline-gray-900">
+                                
+
+                                {
+                                    !getFromPlayer.loading ? (
+                                        <iframe width="100%" height="100%" src={`${getFromPlayer.link}`}
+                                            className="w-full h-full"
+                                            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                            loading="lazy"
+
+                                        ></iframe>
+                                    )
+                                    :
+                                    (
+                                        <SceletonLoading contnetAmount={1}></SceletonLoading>
+                                    )
+                                }
+
+                                
+                            </div>
+                        </div>
+                    </section>
+
+                )
+            }
 
             {/* SEASONS */}
             <section className='w-full relative py-5'>
@@ -477,15 +478,14 @@ function ShowsDetails() {
                                 Seasons
                             </h3>
 
-                            <div className="flex lg:flex-col flex-row flex-wrap gap-2 items-center justify-center bg-gray-900 p-2 rounded-2xl h-[calc(100%-32px)]">
+                            <div className="flex lg:flex-col flex-row flex-wrap gap-2 items-center justify-start bg-gray-900 p-2 rounded-2xl h-[calc(100%-32px)]">
                                 {
                                     show.seasons
-                                        .sort((a, b) => b.season_number - a.season_number)
                                         .map(row => (
                                             <div
                                                 key={row.season_number}
                                                 className={`${selected_season === row.season_number ? "bg-red-500" : "bg-gray-400"} w-9 h-9 rounded-full items-center justify-center cursor-pointer inline-flex`}
-                                                onClick={() => setSelectedSeason(row.season_number)}
+                                                onClick={() => {setGetFromPlayer(prev => prev.loading = true); setSelectedSeason(row.season_number)}}
                                             >
                                                 {row.season_number}
                                             </div>
@@ -504,6 +504,7 @@ function ShowsDetails() {
                                             selected_season={selected_season}
                                             selected_episode={selected_episode}
                                             episodes={episodes}
+                                            handleEpisodePlay={handleEpisodePlay}
                                         />
                                     )
                                     : (
@@ -578,7 +579,7 @@ function ShowsDetails() {
             <RecomendedShows show_id={showId} />
 
             {/* Comments Block */}
-            <Comments post={showId} media_type={'tv'} token={token} forceLog_out={forceLog_out}/>
+            <Comments post={showId} media_type={'tv'} token={token} />
 
             {/* Zoom View Photos Content */}
             {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { popularMovies_or_Shows_Sorted } from "../api/movies.js";
 import {Header} from '../components/Components_collection.js'
@@ -6,6 +6,9 @@ import {Header} from '../components/Components_collection.js'
 const IMAGE_PATH = "https://image.tmdb.org/t/p/w500";
 
 function TrendingAll() {
+
+    window.location.href = '/';
+    
     const location = useLocation();
     const type = location.state?.type || "movie";
 
@@ -14,6 +17,10 @@ function TrendingAll() {
     const [items, setItems] = useState([]);
     const [sortType, setSortType] = useState("popularity.desc");
 
+    const [pageChangded, setPageChanged] = useState(false);
+
+    const [collection, setCollection] = useState([]);
+
     const handleSorting = async (val) => {
         //Reset
         setItems([]);
@@ -21,7 +28,7 @@ function TrendingAll() {
         setHasMore(true);
         setSortType(val);
 
-        console.log(`Sorting to: `, val, 'Data: ', await popularMovies_or_Shows_Sorted(type, 1, val));
+        
         await new Promise((resolve) => setTimeout(resolve, 0));
         fetchData(1, val);
     }
@@ -29,11 +36,21 @@ function TrendingAll() {
     const fetchData = async (p, sort) => {
         const result = await popularMovies_or_Shows_Sorted(type, p, sort);
         
+        if(p === 3) {
+            const innerHeight = window.innerHeight;
+            const scrollHeight = document.documentElement.scrollHeight;
+            const scrollEnd = scrollHeight - innerHeight
+            console.log('Save to collection: ',scrollEnd);
+        }
+
         if (!result?.results?.length) {
             setHasMore(false);
             return;
         }
-        
+
+        const currentWindwHeight = document.body.scrollHeight;
+        console.log(currentWindwHeight);
+
         setItems((prev) => {
             //merge Data
             const newItems = [...prev, ...result.results];
@@ -47,7 +64,6 @@ function TrendingAll() {
             return filteredItems;
         });
 
-        console.log("Trending All Fetch: ", result);
     };
 
     useEffect(() => {
@@ -61,8 +77,41 @@ function TrendingAll() {
         fetchData(1, sortType);
     }, [type]);
 
+    
+    window.addEventListener('scroll', async() => {
+        
+        const scrollY = window.scrollY;
+        const innerHeight = window.innerHeight;
+        const scrollHeight = document.documentElement.scrollHeight;
+        const scrollEnd = scrollHeight - innerHeight
+        
+        if(pageChangded === true) return;
 
-   
+        if ( 
+            scrollY > (scrollEnd - 100) && 
+            hasMore !== false
+        ) {
+            const obj = {
+                type: 'hi'
+            };
+
+            setCollection(prev => [...prev, obj]);
+            
+            setPageChanged(true);
+            const nextPage = page + 1;
+            console.log('nextPage: ', nextPage);
+            setPage(nextPage);
+            await fetchData(nextPage, sortType);
+        }
+        
+    });
+
+
+    useEffect(() => {
+        if (collection.length < 1) return;
+        
+        console.log(collection);
+    },[collection]);
 
     return (
         <>
@@ -105,7 +154,6 @@ function TrendingAll() {
                             md:grid-cols-4 
                             lg:grid-cols-5 
                             gap-3 sm:gap-4 
-                            max-h-[70vh] sm:max-h-[1000px] 
                             overflow-y-auto overflow-x-hidden 
                             pr-1
                         "
@@ -137,28 +185,7 @@ function TrendingAll() {
                     </div>
 
                     {/* Load More */}
-                    {hasMore && (
-                        <div className="w-full flex justify-center mt-8 sm:mt-10">
-                            <button
-                                onClick={() => {
-                                    const next = page + 1;
-                                    setPage(next);
-                                    fetchData(next, sortType);
-                                }}
-                                className="
-                                    px-5 sm:px-6 
-                                    py-2 
-                                    text-black 
-                                    bg-white 
-                                    hover:bg-gray-300 
-                                    rounded
-                                    text-sm sm:text-base
-                                "
-                            >
-                                Load More
-                            </button>
-                        </div>
-                    )}
+                    
                 </div>
             </section>
         </>

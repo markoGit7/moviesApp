@@ -41,8 +41,6 @@ function Browse() {
 
         const howManyDisplayed = type === 'multi' ? 2 : 4;
 
-        console.log("now I will display you suggestions: ", howManyDisplayed);
-
         const Five_Popular_Movies = result.results.filter(col => col.poster_path !== null && (col?.media_type ? col.media_type === 'movie' : true)).sort((a, b) => b.popularity - a.popularity).slice(0, howManyDisplayed);
 
         const Five_Popular_Shows = result.results.filter(col => col.poster_path !== null && (col?.media_type ? col.media_type === 'tv' : true)).sort((a, b) => b.popularity - a.popularity).slice(0, howManyDisplayed);

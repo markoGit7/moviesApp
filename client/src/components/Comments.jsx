@@ -10,6 +10,9 @@ import { faPaperPlane, faThumbsUp, faThumbsDown, faReply, faAngleDown  } from "@
 //import default image
 import default_profileImage from '../assets/default_profile_image/default.png'
 
+// Import global request
+import request from '../api/globalRequests.js';
+
 // FUNCTION: parsing time to say ex: 2 days ago, 1 month ago ...
 function timeAgo(dateString) {
     const date = new Date(dateString);
@@ -57,32 +60,12 @@ function Comments({post, media_type, token, forceLog_out}) {
     });
 
     const loadComments = async() => {
-        const response_s = await fetch(`${import.meta.env.VITE_REQUEST_PATH}comments/get`, {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                'Content-Type' : 'application/json',
-            },
+        const response = await request('http://localhost:3000/comments/get', 'post', true, 'off', {post_id: post, media_type: media_type});
 
-            credentials: "include",
-            
-            body: JSON.stringify ({
-                post_id: post,
-                media_type: media_type
-            })
-        });
-
-        const results = await response_s.json();
+        const results = response || [];
         
-        // EXPIRED ACCESS TOKEN
-        const newToken = response_s.headers.get("x-new-access-token");
-        if(newToken) {
-            localStorage.setItem('access_token', newToken);
-        }
-
-
         //get total comments
-        setTotalComments(results.length);
+        setTotalComments(results?.length || 0);
         //making the upload date to say ex: 2 days ago, 1 hour ago, etc... 
         const parse_date = results.map(col => {
             return{
@@ -121,60 +104,15 @@ function Comments({post, media_type, token, forceLog_out}) {
 
         if(replyOn.author && replyOn.comment_id) {
             console.log('Add new comment with parent_id = ', replyOn.comment_id);
-            
-            response_s = await fetch(`${import.meta.env.VITE_REQUEST_PATH}comments/replies`, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                    'Content-Type': 'application/json',
-                },
-
-                credentials: "include",
-
-                body: JSON.stringify({
-                    post_id: post,
-                    media_type: media_type,
-                    message: Input,
-                    comment_id : replyOn.comment_id
-                }),
-            });
-        
+            const response = await request('http://localhost:3000/comments/replies', 'post', true, 'off', {post_id: post, media_type: media_type, message: Input, comment_id: replyOn.comment_id});
+            response_s = response;
         } else {
-
-            response_s = await fetch(`${import.meta.env.VITE_REQUEST_PATH}comments`, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                    'Content-Type': 'application/json',
-                },
-
-                credentials: "include",
-
-                body: JSON.stringify({
-                    post_id: post,
-                    media_type: media_type,
-                    message: Input
-                }),
-            });
-
+            const response = await request('http://localhost:3000/comments', 'post', true, 'off', {post_id: post, media_type: media_type, message: Input});
+            response_s = response;
         }
+      
+        const result = response_s;
         
-        // when refresh token expires, detect
-        if(response_s.status === 401) {
-            forceLog_out();
-            return;
-        }
-
-        const result = await response_s.json();
-        
-
-        // EXPIRED ACCESS TOKEN
-        const newToken = response_s.headers.get("x-new-access-token");
-        if(newToken) {
-            localStorage.setItem('access_token', newToken);
-        }
-
-
         if(result.status === 500) {
             alert('DB Error occured');
             return;
@@ -227,39 +165,9 @@ function Comments({post, media_type, token, forceLog_out}) {
             alert(`Log in first to ${like ? 'Like' : 'Dislike'}`);
             return;
         }
-
-        const response_s = await fetch(`${import.meta.env.VITE_REQUEST_PATH}comments/reactions`, {
-            method: 'POST',
-
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                'Content-Type': 'application/json',
-            },
-
-            credentials: "include",
-
-            body: JSON.stringify({
-                post_id: post,
-                media_type: media_type,
-                comment_id: comment_id,
-                author: author,
-                reaction: like ? 'like' : 'dislike'
-            })
-        });
-
-        // when refresh token expires, detect
-        if(response_s.status === 401) {
-            forceLog_out();
-            return;
-        }
+        const response = await request('http://localhost:3000/comments/reactions', 'post', true, 'off', {post_id: post, media_type: media_type, author: author, reaction: like ? 'like' : 'dislike'});
         
-        const results_s = await response_s.json();
-
-        // EXPIRED ACCESS TOKEN
-        const newToken = response_s.headers.get("x-new-access-token");
-        if(newToken) {
-            localStorage.setItem('access_token', newToken);
-        }
+        const results_s = response;
 
         if(results_s.status === 500) {
             alert(results_s.message);
@@ -276,42 +184,14 @@ function Comments({post, media_type, token, forceLog_out}) {
 
         console.log(`Deleting Comment:\nID: ${comment_id}\nAuthor: ${userInfo.user_name}`);
         
-        const response_s = await fetch(`${import.meta.env.VITE_REQUEST_PATH}comments/delete`, {
-            method: 'POST',
-            
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                'Content-Type': 'application/json',
-            },
+        const response = await request('http://localhost:3000/comments/delete', 'post', true, 'off', {post_id: post, media_type: media_type, comment_id: comment_id});
 
-            credentials: "include",
-
-            body: JSON.stringify({
-                post_id: post,
-                media_type: media_type,
-                comment_id: comment_id
-            })
-        });
-
-        // when refresh token expires, detect
-        if(response_s.status === 401) {
-            forceLog_out();
-            return;
-        }
-
-        const results_s = await response_s.json();
-
-        // EXPIRED ACCESS TOKEN
-        const newToken = response_s.headers.get("x-new-access-token");
-        if(newToken) {
-            localStorage.setItem('access_token', newToken);
-        }
+        const results_s = response;
 
         if(results_s.status !== 200) {
             alert(results_s.message);
             return;
         }
-
 
         await loadComments();
     }

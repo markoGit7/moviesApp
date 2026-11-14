@@ -5,7 +5,7 @@ const IMAGE_PATH = 'https://image.tmdb.org/t/p/w500';
 
 
 
-function Episodes({selected_season, episodes, selected_episode}) {
+function Episodes({selected_season, episodes, selected_episode, handleEpisodePlay}) {
 
     const oneEpisode = episodes.episodes.find(col => col.episode_number === selected_episode);
 
@@ -74,6 +74,7 @@ function Episodes({selected_season, episodes, selected_episode}) {
                         <div
                             key={row.id}
                             className="flex flex-col rounded-lg overflow-hidden"
+                            onClick={() => handleEpisodePlay(row)}
                         >
 
                             {/* Image */}

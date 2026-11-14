@@ -51,8 +51,6 @@ function RecomendedShows({show_id}) {
             setShows(mostFamous_Existing_7);
             
 
-            console.log('Recomendations Shows', mostFamous_Existing_7);
-
             //no results
             if(result.results.length === 0) setNoRelated(true);
 

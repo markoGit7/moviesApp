@@ -104,7 +104,9 @@ function Header() {
                         {/* Logo + Desktop Navigation */}
                         <div className="flex items-center">
                             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold">
-                                MovieCenter
+                                <a href="/" className='text-2xl sm:text-3xl md:text-4xl font-bold block'>
+                                    MovieCenter
+                                </a>
                             </h1>
 
                             {/* Desktop Navigation */}

@@ -11,6 +11,9 @@ import { faTrashCan, faChevronLeft  } from "@fortawesome/free-solid-svg-icons";
 // import TMDB API
 import {contentByID} from '../api/movies.js'
 
+// Import global request
+import request from '../api/globalRequests.js';
+
 // TMDB image path
 const IMAGE_PATH = 'https://image.tmdb.org/t/p/w500';
 
@@ -32,30 +35,17 @@ function Liked() {
     const navigate = useNavigate();
 
     const AllLiked_DB = async() => {// fetch all liked movies/shows by current User
-        const response_server = await fetch(`${import.meta.env.VITE_REQUEST_PATH}like/getLiked`, {
-            method: 'POST',
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                'Content-Type': 'application/json',
-            },
-        
-            credentials: "include",
-        });
+        const response = await request('http://localhost:3000/like/getLiked', 'post', true, 'off', null);
 
         // If refresh token is expired return user to main page
         // when refresh token expires, detect
-        if(response_server.status === 401) {
+        if(response.status === 401) {
             alert('Your session has expired, log in again');
             navigate('/');
             return;
         }
-        // EXPIRED ACCESS TOKEN
-        const newToken = response_server.headers.get("x-new-access-token");
-        if(newToken) {
-            localStorage.setItem('access_token', newToken);
-        }
 
-        const data = await response_server.json();
+        const data = response;
 
         if(!data.length) {
             setNothingLiked(true);
@@ -160,27 +150,10 @@ function Liked() {
             return;
         }
         
-        const response_s = await fetch(`${import.meta.env.VITE_REQUEST_PATH}like/delete`, {
-            method: 'DELETE',
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                'Content-Type': 'application/json',
-            },
-            
-            body: JSON.stringify({
-                data: selectedToRemove,
-            }),
+        const response = await request('http://localhost:3000/like/delete', 'post', true, 'off', {data: selectedToRemove});
 
-            credentials: "include",
-        });
-
-        // EXPIRED ACCESS TOKEN
-        const newToken = response_s.headers.get("x-new-access-token");
-        if(newToken) {
-            localStorage.setItem('access_token', newToken);
-        }
-
-        if(response_s.status === 204) {
+        
+        if(response.status === 204) {
             console.log("Deleted Successfully");
         }
 

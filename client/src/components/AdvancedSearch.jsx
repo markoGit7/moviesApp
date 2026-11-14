@@ -50,7 +50,6 @@ async function Fetch_Genres() {
 
 async function Fetch_Languages() {
     const result = await Languages();
-    console.log(result);
 }
 
 
@@ -61,7 +60,6 @@ function AdvancedSearch() {
     const storageJSON = localStorage.getItem("searchPrevVals");
     const storageParse = JSON.parse(storageJSON);
 
-    console.log('stored values ', storageParse);
     
     //getting type and query from browse
     const location = useLocation();
@@ -74,7 +72,6 @@ function AdvancedSearch() {
             ? "movie"
             : location.state?.type;
     }
-    console.log(`From Browse values: `, {title: q, type: t});
 
     //variables
     const [title, setTitle] = useState(q || storageParse?.query || "");
@@ -174,11 +171,8 @@ function AdvancedSearch() {
         //remove loading
         setLoading(false);
 
-        console.log('SELECTED YEAR: ', year);
         //save to localstorage
         storeCurrentValues(title, type, page, selectedLanguage, year, selectedGenre);
-
-        console.log('Array: ', final);
         
         //getting array of content
         setItem(final);

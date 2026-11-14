@@ -5,6 +5,8 @@ import React, {useState, useEffect} from 'react'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash  } from "@fortawesome/free-solid-svg-icons";
 
+// Import global request
+import request from '../../api/globalRequests';
 
 function Sing_form() {
 
@@ -45,28 +47,16 @@ function Sing_form() {
             return;
         }
 
+        console.log(userName);
 
-        const response = await fetch(`${import.meta.env.VITE_REQUEST_PATH}auth/signup`, {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                userName: userName,
-                email: email,
-                password: password,
-                confirmPassword: confirmPassword
-            }),
-        });
+        const response = await request('http://localhost:3000/auth/signup', 'post', false, 'off', {email: email, userName: userName, password: password, confirmPassword: confirmPassword});
 
-        const serverData = await response.json();
-
-        if(serverData.status === 409) {
+        if(response.status === 409) {
             alert(serverData.message);
-        } else if(serverData.status === 400) {
+        } else if(response.status === 400) {
             alert(`Password could't confirm`);
-        } else if(serverData.status === 500) {
-            alert(serverData.message);
+        } else if(response.status === 500) {
+            alert(response.message);
         
         } else {
             alert('New user added sucessfully!!!');

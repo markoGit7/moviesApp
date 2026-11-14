@@ -5,7 +5,6 @@ import {TodayReleased, Genres} from '../api/movies.js'
 //imported animation
 import { motion, AnimatePresence } from 'framer-motion';
 
-
 const IMAGE_PATH = 'https://image.tmdb.org/t/p/w500';
 
 //function for slugifying
@@ -26,7 +25,7 @@ function HeroSection() {
     const handleNavigation = (Row_title, Row_id) => {
         const title = Row_title;
         const ID = Row_id;
-        console.log('Show Title', title);
+        
         if(activeTab === 'movies') {
             navigate(`/movie/${slugify(title)}`, { state: { id: ID } });
         } else {
@@ -98,7 +97,7 @@ function HeroSection() {
 
                 {/* Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <AnimatePresence mode="wait">
+                    <AnimatePresence mode="">
                         {content &&
                             content.map((row, index) => (
                                 <motion.div

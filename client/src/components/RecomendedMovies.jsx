@@ -47,11 +47,9 @@ function RecomendedMovies({movie_id}) {
         
         (async () => {
             const result = await recommedationMoviesByID(movie_id);
-            const mostFamous_Existing_7 = result.results.sort((a, b) => b.popularity - a.popularity).filter(row => row.poster_path !== null).slice(0, 8);
-            console.log('related: ', mostFamous_Existing_7);
+            const mostFamous_Existing_7 = result.results.sort((a, b) => b.popularity - a.popularity).filter(row => row.poster_path !== null).slice(0, 8);            
             setMovies(mostFamous_Existing_7);
 
-            console.log('Recomendations Movies', mostFamous_Existing_7);
             //no results
             if(result.results.length === 0) setNoRelated(true);
 
