@@ -17,6 +17,15 @@ function ContentDisplay({array, type}) {
 
     const navigate = useNavigate();
 
+    const goTo = (media_type, title, id) => {        
+        navigate(
+            `/${media_type || type}/${slugify(title)}`,
+            { state: { id: id } }
+        )
+    }
+
+    const getYear = (releaseDate) => releaseDate.split('-')[0]
+
     if(!array.length) return(<div className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl'>Empty</div>);
 
     return (
@@ -35,13 +44,11 @@ function ContentDisplay({array, type}) {
                                 lg:w-1/4
                                 flex-none
                             "
+                            id='item'
                         >
                             <div
                                 onClick={() =>
-                                    navigate(
-                                        `/${col?.media_type || type}/${slugify(col.title || col.name)}`,
-                                        { state: { id: col.id } }
-                                    )
+                                    goTo(col.media_type, (col?.title || col?.name), col.id)
                                 }
                                 className={`
                                     w-full
@@ -66,6 +73,11 @@ function ContentDisplay({array, type}) {
                                     hover:scale-[1.03]
                                 `}
                             >
+
+                                {/* Year of release */}
+                                <span className='absolute outline-gray-700 bg-gray-400 text-white rounded-2xl p-2 block min-w-15 text-sm top-1 left-1 text-center shadow-[1px,1px,3px, rgba(0,0,0,.15)]'>
+                                    {getYear(col?.first_air_date || col?.release_date)}
+                                </span>
 
                                 {/* Poster */}
                                 <img

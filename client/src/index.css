@@ -46,3 +46,7 @@ select::-webkit-scrollbar-thumb:hover, #trendingAll_Content_Parent::-webkit-scro
   font-weight: 500;
   transition: all 0.3s ease-in-out;
 }
+
+._controlsGroup_2x4h9_25 {
+  display: none !important;
+}

@@ -8,22 +8,24 @@ export default function ProviderLinks(id, type = 'movie', episode = null, season
         const src = [
             `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${season}&e=${episode}`,
             `https://www.2embed.cc/embedtv/${id}&s=${season}&e=${episode}`,
+            `https://vidcore.org/embed/tv/${id}/${season}/${episode}?autoplay=true&disableControls=false`,
         ];
 
         // const response = await request('http://localhost:3000/validSource', 'post', false, 'on', {src: src});
         
-        return src[0];
+        return src[2];
 
     } else {
 
         const src = [
             `https://multiembed.mov/?video_id=${id}&tmdb=1`,
-            `https://www.2embed.cc/embed/${id}`
+            `https://www.2embed.cc/embed/${id}`,
+            `https://vidcore.org/embed/movie/${id}?autoplay=true&disableControls=false`
         ]
         
         // const response = await request('http://localhost:3000/validSource', 'post', false, 'on', {src: src});
 
-        return src[0];
+        return src[2];
 
     }
 

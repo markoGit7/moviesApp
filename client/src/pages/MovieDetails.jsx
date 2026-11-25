@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import {contentByID} from '../api/movies.js'
 //Font Awesome Icons
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar, faPlay, faImages, faX, faChevronCircleLeft, faChevronCircleRight, faHeart,  faCommentDots, faChevronLeft, faChevronRight  } from "@fortawesome/free-solid-svg-icons";
+import { faStar, faPlay, faImages, faX, faChevronCircleLeft, faChevronCircleRight, faHeart,  faCommentDots, faChevronLeft, faChevronRight, faMaximize  } from "@fortawesome/free-solid-svg-icons";
 
 //components
 import {Header, RecomendedMovies, Comments, SceletonLoading} from '../components/Components_collection.js'
@@ -153,6 +153,7 @@ function MovieDetails() {
         isAlreadyLiked();
         
     }, []);
+
     
     const handleLike = async() => {
         if(!token) {
@@ -166,7 +167,6 @@ function MovieDetails() {
         window.dispatchEvent(new Event("storageUpdate"));
 
     };
-
     
     
     if(!movieId) return <div>No Results</div>
@@ -176,10 +176,11 @@ function MovieDetails() {
     const countryCode = navigator.language.split('-')[1];
     const LINK = movie['watch/providers']?.results[countryCode]?.link || "";
 
-
+    console.log(movie.id);
     return (
        <>
             <Header />
+           
 
             {/* HERO */}
             <section className='w-full relative py-5'>
@@ -330,12 +331,19 @@ function MovieDetails() {
 
                     <section className='w-full relative py-5'>
                         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-                            <div className="w-full h-125 rounded-lg bg-gray-700 overflow-hidden mx-auto outline-1 outline-gray-900">
-                                <iframe width="100%" height="100%" src={getFromPlayer.link} frameborder="0"
+                            <div className="w-full h-125 rounded-lg bg-gray-700 overflow-hidden mx-auto outline-1 outline-gray-900 relative">
+                                <iframe width="100%" height="100%" 
+                                    src={getFromPlayer.link} 
+                                    frameborder="0"
                                     className="w-full h-full"
-                                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
+                                    sandbox = "allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation" 
+                                    gesture="media" 
+                                    allow="autoplay; encrypted-media; fullscreen; picture-in-picture" 
+                                    allowfullscreen
+                                    loading="lazy"
                                 ></iframe>
+
+                                
                             </div>
                         </div>
                     </section>

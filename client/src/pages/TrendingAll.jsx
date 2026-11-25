@@ -6,118 +6,176 @@ import {Header} from '../components/Components_collection.js'
 const IMAGE_PATH = "https://image.tmdb.org/t/p/w500";
 
 function TrendingAll() {
-
-    window.location.href = '/';
     
     const location = useLocation();
     const type = location.state?.type || "movie";
 
-    const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [items, setItems] = useState([]);
     const [sortType, setSortType] = useState("popularity.desc");
+    const [sortActive, setSortActive] = useState(false);
 
-    const [pageChangded, setPageChanged] = useState(false);
+    const [pagesRange, setPagesRange] = useState({
+        min: 0,
+        max: 4,
+    });
 
-    const [collection, setCollection] = useState([]);
+   
+
+    const [isNextPage, setIsNextPage] = useState(0);
+    const [isFirstRun, setIsFirstRun] = useState(true);
+    
 
     const handleSorting = async (val) => {
         //Reset
-        setItems([]);
-        setPage(1);
-        setHasMore(true);
         setSortType(val);
+        setSortActive(true);
+    };
 
-        
-        await new Promise((resolve) => setTimeout(resolve, 0));
-        fetchData(1, val);
-    }
+    const fetchData = async () => {
+        const sort = sortType;
+        const range = pagesRange;
 
-    const fetchData = async (p, sort) => {
-        const result = await popularMovies_or_Shows_Sorted(type, p, sort);
-        
-        if(p === 3) {
-            const innerHeight = window.innerHeight;
-            const scrollHeight = document.documentElement.scrollHeight;
-            const scrollEnd = scrollHeight - innerHeight
-            console.log('Save to collection: ',scrollEnd);
+        const response = [];
+        console.log({range:range});
+        for(let i = range.min; i < range.max; i++) {
+            const request = await popularMovies_or_Shows_Sorted(type, i+1, sort);
+
+            if (!request.results.length) continue;
+
+            const normalize = request.results.map(row => ({...row, page: i+1}));
+
+            response.push(...normalize);
         }
 
-        if (!result?.results?.length) {
+        if (!response.length) {
             setHasMore(false);
             return;
         }
-
-        const currentWindwHeight = document.body.scrollHeight;
-        console.log(currentWindwHeight);
-
-        setItems((prev) => {
-            //merge Data
-            const newItems = [...prev, ...result.results];
-
-            //Remove duplicates
-            const uniqueItems = Array.from(new Map(newItems.map(item => [item.id, item])).values());
-
-            //remove poster_path null Data
-            const filteredItems = uniqueItems.filter(item => item.poster_path !== null);
-            
-            return filteredItems;
-        });
+        console.log(response);
+        setItems(response);
 
     };
 
-    useEffect(() => {
-        window.scrollTo(0, 0);
-    }, []);
+   
 
-    useEffect(() => {
-        setItems([]);
-        setPage(1);
-        setHasMore(true);
-        fetchData(1, sortType);
-    }, [type]);
-
-    
-    window.addEventListener('scroll', async() => {
+  
         
+    function handleScrolling() {
+
         const scrollY = window.scrollY;
         const innerHeight = window.innerHeight;
         const scrollHeight = document.documentElement.scrollHeight;
         const scrollEnd = scrollHeight - innerHeight
         
-        if(pageChangded === true) return;
+        console.log(scrollY);
 
         if ( 
-            scrollY > (scrollEnd - 100) && 
-            hasMore !== false
+            scrollY > (scrollEnd - 100) 
         ) {
-            const obj = {
-                type: 'hi'
-            };
 
-            setCollection(prev => [...prev, obj]);
+            const range =  pagesRange;
+
+            const obj = {
+                min: range.min + 5,
+                max: range.max + 5,
+            };
             
-            setPageChanged(true);
-            const nextPage = page + 1;
-            console.log('nextPage: ', nextPage);
-            setPage(nextPage);
-            await fetchData(nextPage, sortType);
+            setPagesRange(obj);
+            
+        } else if (scrollY === 0) {
+            
+            const range =  pagesRange;
+
+            const obj = {
+                min: Math.max((range.min - 5), 0),
+                max: Math.max((range.max - 5), 4),
+            };
+            
+            setPagesRange(obj);
+           
         }
         
-    });
+    };
+
+    useEffect(() => {
+
+        if (!sortActive) return;
+
+        setIsFirstRun(true);
+        setPagesRange({
+            min: 0,
+            max: 4,
+        });
+        setIsNextPage(0);
+        
+        (async() => {
+            await new Promise((resolve) => setTimeout(resolve, 0));
+            fetchData();
+        })();
+
+        setSortActive(false);
+        
+    }, [sortType]);
 
 
     useEffect(() => {
-        if (collection.length < 1) return;
+        if (isFirstRun) {
+
+            window.scrollTo({
+                top: 50,
+                left:0,
+                behavior: 'smooth'
+            });
+            console.log('---Show Content OnLoad---')
+            fetchData();
+
+        } else {
+
+
+            window.addEventListener('scroll', handleScrolling);
+            return () => window.removeEventListener('scroll', handleScrolling);
+
+        }
+
+    },[isFirstRun, isNextPage]);
+
+
+    useEffect(() => {
+       
+        if (isFirstRun) return;
+      
+
+        console.log(`This is read on page ${pagesRange.min}-${pagesRange.max}`);
         
-        console.log(collection);
-    },[collection]);
+        fetchData();
+
+        window.scrollTo({
+            top: 50,
+            left: 0,
+            behavior: 'smooth'
+        });
+        
+    }, [pagesRange]);
+    
+    
+    useEffect(() => {
+        if(!items.length) return;
+        
+        if(!isFirstRun) {
+            setIsNextPage(prev => prev+1);
+        }
+
+        setIsFirstRun(false);
+    }, [items]);
+
+    const getYear = (releaseDate) => releaseDate.split('-')[0];
 
     return (
         <>
             <Header />
 
-            <section className="w-full min-h-screen py-6 sm:py-10 bg-black text-white">
+            <section className="w-full min-h-screen !p-[32px_0_500px]  sm:py-10 bg-black text-white">
                 <div className='w-[1200px] max-w-full px-4 sm:px-5 mx-auto'>
 
                     {/* Title */}
@@ -163,8 +221,13 @@ function TrendingAll() {
                                 key={col.id}
                                 to={`/${type}/${col.title || col.name}`}
                                 state={{ id: col.id }}
-                                className="group"
+                                className="group relative"
                             >
+                                {/* Year of release */}
+                                <span className='absolute outline-gray-700 bg-gray-400 text-white rounded-2xl p-2 block min-w-15 text-sm top-1 left-1 text-center shadow-[1px,1px,3px, rgba(0,0,0,.15)]'>
+                                    {getYear(col?.first_air_date || col?.release_date)}
+                                </span>
+
                                 <img
                                     src={`${IMAGE_PATH}${col.poster_path}`}
                                     alt={col.title || col.name}

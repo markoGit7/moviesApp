@@ -34,9 +34,7 @@ import missing_actor from '../assets/actors/missing_actor.jpg'
 
 const IMAGE_PATH = 'https://image.tmdb.org/t/p/w500';
 function ShowsDetails() {
-    const { slug } = useParams();
     const location = useLocation();
-    const navigate = useNavigate();
     const [show, setShow] = useState(null);
     const [episodes, setEpisodes] = useState(null);
     const [selected_season, setSelectedSeason] = useState(null);
@@ -52,8 +50,8 @@ function ShowsDetails() {
     const [zoomedVideos, setZoomedVideos] = useState(null);
     const [currentIndex, setCurrentIndex] = useState(0); 
 
-    const [sendToPlayer, setToPlayer] = useState({season: null, episode: null});
     const [getFromPlayer, setGetFromPlayer] = useState({link:'', loading: true});
+    const [currentEpisode, setCurrentEpisode] = useState(null);
 
     //user
     const token = Boolean(localStorage.getItem('access_token'));
@@ -120,64 +118,67 @@ function ShowsDetails() {
         setEpisodes(null);
         setTrailerKey(null);
         setAllActors(null);
+        setGetFromPlayer({link:'', loading: true});
+        setSelectedSeason(null);
+        setCurrentEpisode(null)
+        setSelectedEpisode(null);
     }
 
 
+    async function fetchData() {
+        const result = await contentByID(showId, 'tv');
+        setShow(result);
+
+        //get trailers
+        const video = result.videos.results.find(row => row.type === 'Trailer' && row.site === 'YouTube') || null;
+        
+        if (video) setTrailerKey(video.key);
+
+        //get acters
+        const theCast = [...result.credits.cast];
+
+        //remove 2x Member form crew
+        const singleMemberCrew = [];
+        result.credits.crew.forEach(col => {
+
+            const isActor = col.known_for_department === 'Acting';
+
+            const double = singleMemberCrew.find(member => member?.id === col.id);
+
+            if(!double && isActor) singleMemberCrew.push(col);
+        });
+        
+        //remove 2x Member of crew from cast
+        const theCrew = singleMemberCrew.filter(col => col.known_for_department === 'Acting' &&  !theCast.some(castMember => castMember.id === col.id));
+        setAllActors([...theCast, ...theCrew]);
+
+        // set selected_season to latest
+        const season_select = result.seasons.map(row => {
+            
+            if(row.season_number > 0) {
+
+                const season = row;
+
+                // season.episode_count > 0; (in case season donsen't start from ep 1 on default)
+
+                return season.season_number
+
+            } else {
+                return false;
+            }
+        }).filter(Boolean)[0];
+
+        setSelectedSeason(season_select);
+    };
+
 
     useEffect(() => {//fetching a show arr from api
-        
+        console.log('reading');
         reset();
 
-        (async () => {
-            const result = await contentByID(showId, 'tv');
-            setShow(result);
-
-            //get trailers
-            const video = result.videos.results.find(row => row.type === 'Trailer' && row.site === 'YouTube') || null;
-            
-            if (video) setTrailerKey(video.key);
-
-            //get acters
-            const theCast = [...result.credits.cast];
-
-            //remove 2x Member form crew
-            const singleMemberCrew = [];
-            result.credits.crew.forEach(col => {
-
-                const isActor = col.known_for_department === 'Acting';
-
-                const double = singleMemberCrew.find(member => member?.id === col.id);
-
-                if(!double && isActor) singleMemberCrew.push(col);
-            });
-            
-            //remove 2x Member of crew from cast
-            const theCrew = singleMemberCrew.filter(col => col.known_for_department === 'Acting' &&  !theCast.some(castMember => castMember.id === col.id));
-            setAllActors([...theCast, ...theCrew]);
-
-            // set selected_season to latest
-            const season_select = result.seasons.map(row => {
-                
-                if(row.season_number > 0) {
-
-                    const season = row;
-
-                    season.episode_count > 0;
-
-                    return season.season_number
-
-                } else {
-                    return false;
-                }
-            }).filter(Boolean)[0];
-
-
-            setSelectedSeason(season_select);
-
-        })();
-    
+        fetchData();
         
-    }, [location.state?.id])
+    }, [showId])
 
     useEffect(() => {//Get the episodes of the selected season
         if(selected_season === null) return;
@@ -186,7 +187,7 @@ function ShowsDetails() {
         
         const obj = {
             link: link,
-            loading: false,
+            loading: false
         }
 
         setGetFromPlayer(obj);
@@ -196,8 +197,15 @@ function ShowsDetails() {
             const result = await episodesBySeason(showId, selected_season);
             setEpisodes(result);
 
+            const getEpisode1 = result.episodes[0].episode_number;
+
+            console.log({getEpisode1: getEpisode1});
+
+            setCurrentEpisode(getEpisode1);
+
             //set the selected episode to none
             setSelectedEpisode(null);
+
         })();
        
         
@@ -246,9 +254,10 @@ function ShowsDetails() {
         window.dispatchEvent(new Event("storageUpdate"));
     }
 
-
     const handleEpisodePlay = (ep = 1) => {
+        
         const episodeNo = episodes.episodes.findIndex(row => row.id === ep.id) + 1;
+        setCurrentEpisode(episodeNo);
 
         setGetFromPlayer(prev => prev.loading === true);
 
@@ -256,14 +265,20 @@ function ShowsDetails() {
             const link = ProviderLinks(show.id, 'tv', episodeNo, selected_season);
             const obj = {
                 link: link,
-                loading: false,
+                loading: false
             }
             setGetFromPlayer(obj);
+
+            window.scrollTo({
+                top: Number(document.querySelector('#playerSection').offsetTop - 100),
+                left: 0,
+                behavior: 'smooth'
+            })
+
         }, 300);    
     }    
     
 
-    
     if(!showId) return <div>No Results</div>
     if(!show) return <div>Loading...</div>
 
@@ -274,7 +289,7 @@ function ShowsDetails() {
     return (
        <>
             <Header />
-
+            
             {/* HERO */}
             <section className='w-full relative py-5'>
                 <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
@@ -417,19 +432,30 @@ function ShowsDetails() {
             {
                 show && (
 
-                    <section className='w-full relative py-5'>
+                    <section className='w-full relative py-5' id="playerSection">
                         <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-                            <div className="w-full h-125 rounded-lg bg-gray-700 overflow-hidden mx-auto relative outline-1 outline-gray-900">
+                            <div className="w-full h-125 rounded-lg bg-gray-700 overflow-hidden mx-auto relative outline-1 outline-gray-900 relative">
+                                {
+                                    ( getFromPlayer?.loading === false &&
+                                      selected_season !== null &&
+                                      currentEpisode !== null )&&
+                                    (
+                                        <span className="bg-transparent text-base text-white absolute top-2 left-2">S{selected_season ? selected_season : 'NaN'} - E{currentEpisode ? currentEpisode : 'NaN'}</span>
+                                    )
+                                }
                                 
-
                                 {
                                     !getFromPlayer.loading ? (
-                                        <iframe width="100%" height="100%" src={`${getFromPlayer.link}`}
+                                        <iframe width="100%" height="100%"
+                                            id="show_mainPlayer" 
+                                            src={`${getFromPlayer.link}`}
+                                            frameborder="0"
                                             className="w-full h-full"
-                                            allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                            allowFullScreen
+                                            sandbox = "allow-forms allow-pointer-lock allow-same-origin allow-scripts allow-top-navigation" 
+                                            gesture="media" 
+                                            allow="autoplay; encrypted-media; fullscreen; picture-in-picture" 
+                                            allowfullscreen
                                             loading="lazy"
-
                                         ></iframe>
                                     )
                                     :

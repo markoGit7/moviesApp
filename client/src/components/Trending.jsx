@@ -63,7 +63,9 @@ function Trending() {
             setGenres(await Fetch_Genres());
         })();
       
-    }, [])
+    }, []);
+
+    const getYear = (releaseDate) => releaseDate.split('-')[0] || 1970
     
 
     return (
@@ -83,12 +85,12 @@ function Trending() {
                         {/* Custom arrows */}
                         <FontAwesomeIcon
                             icon={faChevronLeft}
-                            className="custom-prev-movie absolute left-0 top-1/2 -translate-y-1/2 text-2xl sm:text-3xl md:text-[40px] text-white shadow cursor-pointer z-10"
+                            className="custom-prev-movie absolute left-0 top-1/2 -translate-y-1/2 text-[20px] text-white shadow cursor-pointer z-10"
                         />
 
                         <FontAwesomeIcon
                             icon={faChevronRight}
-                            className="custom-next-movie absolute right-0 top-1/2 -translate-y-1/2 text-2xl sm:text-3xl md:text-[40px] text-white shadow cursor-pointer z-10"
+                            className="custom-next-movie absolute right-0 top-1/2 -translate-y-1/2 text-[20px] text-white shadow cursor-pointer z-10"
                         />
 
                         <Swiper
@@ -117,7 +119,13 @@ function Trending() {
                             {
                                 displayMovies.map(row => (
                                     <SwiperSlide key={row.id}>
-                                        <div>
+                                        <div className='relative'>
+
+                                            {/* Year of release */}
+                                            <span className='absolute outline-gray-700 bg-gray-400 text-white rounded-2xl p-2 block min-w-15 text-sm top-1 left-1 text-center shadow-[1px,1px,3px, rgba(0,0,0,.15)]'>
+                                                {getYear(row?.first_air_date || row?.release_date)}
+                                            </span>
+
                                             <span
                                                 onClick={() =>
                                                     navigate(
@@ -188,12 +196,12 @@ function Trending() {
                         {/* Custom arrows */}
                         <FontAwesomeIcon
                             icon={faChevronLeft}
-                            className="custom-prev-show absolute left-0 top-1/2 -translate-y-1/2 text-2xl sm:text-3xl md:text-[40px] text-white shadow cursor-pointer z-10"
+                            className="custom-prev-show absolute left-0 top-1/2 -translate-y-1/2 text-[20px] text-white shadow cursor-pointer z-10"
                         />
 
                         <FontAwesomeIcon
                             icon={faChevronRight}
-                            className="custom-next-show absolute right-0 top-1/2 -translate-y-1/2 text-2xl sm:text-3xl md:text-[40px] text-white shadow cursor-pointer z-10"
+                            className="custom-next-show absolute right-0 top-1/2 -translate-y-1/2 text-[20px] text-white shadow cursor-pointer z-10"
                         />
 
                         <Swiper
@@ -222,7 +230,13 @@ function Trending() {
                             {
                                 displayShows.map(row => (
                                     <SwiperSlide key={row.id}>
-                                        <div>
+                                        <div className='relative'>
+
+                                            {/* Year of release */}
+                                            <span className='absolute outline-gray-700 bg-gray-400 text-white rounded-2xl p-2 block min-w-15 text-sm top-1 left-1 text-center shadow-[1px,1px,3px, rgba(0,0,0,.15)]'>
+                                                {getYear(row?.first_air_date || row?.release_date)}
+                                            </span>
+
                                             <span
                                                 onClick={() =>
                                                     navigate(

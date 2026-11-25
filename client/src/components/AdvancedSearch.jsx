@@ -102,7 +102,7 @@ function AdvancedSearch() {
     
 
 
-    const handleInputSubmit = (str) => {//Setting up title name, and other on blur and Enter functionalitis
+    const handleInputSubmit = ( str = (document.querySelector('#advancedSearchInput').value || '') ) => {//Setting up title name, and other on blur and Enter functionalitis
 
         if(str === "" && type === "multi") {
             setType("movie");
@@ -230,7 +230,6 @@ function AdvancedSearch() {
     }, []);
     
 
-
     useEffect(() => {//dedecting input changes 
 
         if(genersLoading) return;
@@ -280,7 +279,7 @@ function AdvancedSearch() {
         
     }, [page, genersLoading]);
     
-    
+
 
     return (
         <>
@@ -307,21 +306,21 @@ function AdvancedSearch() {
                                 <div className='relative flex-1 lg:w-[600px] max-w-full'>
                                     <input
                                         type='text'
+                                        
                                         defaultValue={title}
                                         onKeyDown={(e) =>
                                             e.key === 'Enter'
                                                 ? handleInputSubmit(e.target.value)
                                                 : null
                                         }
-                                        onBlur={(e) =>
-                                            handleInputSubmit(e.target.value)
-                                        }
                                         placeholder='Search by title...'
+                                        id='advancedSearchInput'
                                         className='border-gray-500 w-full focus:border-gray-200 p-[12px_12px_12px_38px] border rounded-lg outline-none text-base sm:text-lg'
                                     />
 
                                     <FontAwesomeIcon
                                         icon={faMagnifyingGlass}
+                                        onClick={() => handleInputSubmit()}
                                         className="text-lg absolute left-3 top-1/2 -translate-y-1/2"
                                     />
                                 </div>
